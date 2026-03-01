@@ -1,0 +1,8 @@
+ACP-Spec-Version: 0.1.0
+ACP-Trace-Id: 20260301T140146Z_ca11
+ACP-Trace-Hash: sha256:9a31714a6120373bfeeb830c4ed142873a600a426b6529828498ac85968dae3f
+ACP-Event-Count: 1
+ACP-Tool: claude-code
+ACP-Redaction: hash-response
+
+{"spec_version":"0.1.0","trace_id":"20260301T140146Z_ca11","created_at":"2026-03-01T14:01:46.000Z","target":{"type":"git-commit","id":"e51de0144dd26e38d7465b2d23e86110b5735b6b"},"tool_summary":{"primary_tool":"claude-code","tools_used":["claude-code"]},"redaction_mode":"hash-response","event_count":1,"events":[{"spec_version":"0.1.0","event_id":"evt_9c398391","timestamp":"2026-03-01T14:01:46.000Z","tool":"claude-code","prompt":"Review the spec. Populate LICENSE with Apache 2.0, create the bootstrap script at scripts/acp-bootstrap.sh, and populate README.md with project overview and quick start guide.","prompt_hash":"sha256:bacfc87acf89fe8a14b48a457d70e3fe28c441e10f6bfbd4d24e5d7df64096f2","response_captured":false}],"integrity":{"algorithm":"sha256-canonical-json","trace_hash":"sha256:9a31714a6120373bfeeb830c4ed142873a600a426b6529828498ac85968dae3f"}}

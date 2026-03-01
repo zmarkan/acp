@@ -7,16 +7,13 @@
 ## Installation
 
 ```bash
-# npm
-npm install -g git-whence
-
-# Homebrew
-brew install git-whence
+# pip
+pip install git-whence
 
 # From source
 git clone https://github.com/zmarkan/acp.git
 cd acp/cli
-npm install && npm link
+pip install -e .
 ```
 
 Once installed, Git auto-discovers the `git-whence` binary and `git whence <command>` works natively.
@@ -835,12 +832,13 @@ version: 2.1
 jobs:
   acp-provenance:
     docker:
-      - image: cimg/node:20.0
+      - image: cimg/python:3.12
     steps:
       - checkout
       - run:
           name: Install git-whence
-          command: npm install -g git-whence
+          command: pip install -e .
+          working_directory: cli
       - run:
           name: Fetch ACP notes
           command: git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true

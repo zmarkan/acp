@@ -1,0 +1,8 @@
+ACP-Spec-Version: 0.1.0
+ACP-Trace-Id: 20260301T141312Z_a2cb
+ACP-Trace-Hash: sha256:b71554b2bdabe3d5180b55da8d9de8c7489549db37864e591df3c33658189848
+ACP-Event-Count: 1
+ACP-Tool: claude-code
+ACP-Redaction: hash-response
+
+{"spec_version":"0.1.0","trace_id":"20260301T141312Z_a2cb","created_at":"2026-03-01T14:13:12.000Z","target":{"type":"git-commit","id":"ac7a18e3bd513e6dfeb0f0a6713fb425e612fe88"},"tool_summary":{"primary_tool":"claude-code","tools_used":["claude-code"]},"redaction_mode":"hash-response","event_count":1,"events":[{"spec_version":"0.1.0","event_id":"evt_f130dea2","timestamp":"2026-03-01T14:13:12.000Z","tool":"claude-code","prompt":"Create a JSON Schema for ACP that conforms to the spec, with conditional validation for redaction modes and response capture semantics.","prompt_hash":"sha256:831c78f0a8e938b8ab5403df1173506b6c1f1d4f86263c88c7a0875c0f66c237","response_captured":false}],"integrity":{"algorithm":"sha256-canonical-json","trace_hash":"sha256:b71554b2bdabe3d5180b55da8d9de8c7489549db37864e591df3c33658189848"}}

@@ -12,8 +12,15 @@ def register(subparsers):
     p.add_argument(
         "revision_range",
         nargs="?",
-        default="HEAD~10..HEAD",
+        default=None,
         help="Git revision range (default: HEAD~10..HEAD)",
+    )
+    p.add_argument(
+        "-n", "--number",
+        type=int,
+        default=10,
+        dest="num_commits",
+        help="Number of recent commits to show (default: 10)",
     )
     p.add_argument(
         "--format",
@@ -21,6 +28,11 @@ def register(subparsers):
         choices=["text", "json"],
         default="text",
         help="Output format (default: text)",
+    )
+    p.add_argument(
+        "-s", "--sparse",
+        action="store_true",
+        help="Show compact summary without prompts",
     )
     p.add_argument("--all", action="store_true", dest="show_all", help="Include commits without traces")
     p.add_argument("--stats", action="store_true", help="Show summary statistics")
@@ -30,10 +42,13 @@ def register(subparsers):
 def run(args) -> int:
     git.ensure_acp_initialized()
 
+    # Resolve revision range: explicit range wins, otherwise use -n
+    revision_range = args.revision_range if args.revision_range else f"HEAD~{args.num_commits}..HEAD"
+
     try:
-        commits = git.log_range(args.revision_range)
+        commits = git.log_range(revision_range)
     except git.GitError:
-        print(f"Error: invalid revision range: {args.revision_range}", file=sys.stderr)
+        print(f"Error: invalid revision range: {revision_range}", file=sys.stderr)
         return USER_ERROR
 
     if not commits:
@@ -75,7 +90,19 @@ def _output_text(entries: list[dict], args) -> int:
                 tool = trace_obj.get("tool_summary", {}).get("primary_tool", "unknown")
                 mode = trace_obj.get("redaction_mode", "unknown")
                 print(f"{sha} {msg}")
-                print(f"  ACP: {event_count} events via {tool} ({mode})")
+                print(f"  {event_count} events via {tool} ({mode})")
+
+                if not args.sparse:
+                    events = trace_obj.get("events", [])
+                    for i, event in enumerate(events, 1):
+                        prompt = event.get("prompt")
+                        if prompt:
+                            if len(prompt) > 120:
+                                prompt = prompt[:117] + "..."
+                            print(f'    {i}. "{prompt}"')
+                        else:
+                            print(f"    {i}. [hash-only]")
+
                 print()
         elif args.show_all:
             print(f"{sha} {msg}")

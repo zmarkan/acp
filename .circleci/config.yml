@@ -34,6 +34,9 @@ jobs:
           command: pip install -e .
           working_directory: cli
       - run:
+          name: Initialize ACP
+          command: git whence init
+      - run:
           name: Fetch ACP notes
           command: git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true
       - run:

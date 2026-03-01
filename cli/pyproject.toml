@@ -19,6 +19,12 @@ classifiers = [
     "Topic :: Software Development :: Version Control :: Git",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+
 [project.scripts]
 git-whence = "git_whence.main:main"
 

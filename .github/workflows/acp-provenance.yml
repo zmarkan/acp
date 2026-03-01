@@ -45,7 +45,7 @@ jobs:
         run: git whence verify $ACP_RANGE --policy integrity
 
       - name: Check co-author compliance
-        run: git whence verify $ACP_RANGE --policy co-author || true
+        run: git whence verify $ACP_RANGE --policy co-author
 
       - name: Generate provenance report
         run: |

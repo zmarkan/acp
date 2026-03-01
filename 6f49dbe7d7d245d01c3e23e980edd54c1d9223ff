@@ -1,0 +1,8 @@
+ACP-Spec-Version: 0.1.0
+ACP-Trace-Id: 20260301T163117Z_27c5
+ACP-Trace-Hash: sha256:fe785b898060380095264b9ba3498a04ff1a2d22cad4e67907df8059cca1b11c
+ACP-Event-Count: 1
+ACP-Tool: claude-code
+ACP-Redaction: hash-response
+
+{"spec_version":"0.1.0","trace_id":"20260301T163117Z_27c5","created_at":"2026-03-01T16:31:17.000Z","target":{"type":"git-commit","id":"8035093041e67ade3bd2c35a83c76194d80abc99"},"redaction_mode":"hash-response","event_count":1,"events":[{"spec_version":"0.1.0","event_id":"evt_bb333303","timestamp":"2026-03-01T16:30:55.033Z","prompt":"Remove || true from co-author policy check in both GitHub Actions and CircleCI workflows so that git whence verify --policy co-author correctly fails the CI step when a co-authored commit has no ACP trace","prompt_hash":"sha256:80e82c1e28a333bb65681f7d6e284fea07eda50763b3e541ffc23d64908d68f3","tool":"claude-code","branch":"main","files":[".github/workflows/acp-provenance.yml",".circleci/config.yml"],"model":"claude-opus-4-6","response_captured":false,"context":{"git_base_sha":"c83245efde15683232f618551d189ce4331b4284","workspace_state":"dirty"},"cwd":"/Users/zmarkan/code/acp"}],"integrity":{"algorithm":"sha256-canonical-json","trace_hash":"sha256:fe785b898060380095264b9ba3498a04ff1a2d22cad4e67907df8059cca1b11c"},"branch":"main","tool_summary":{"primary_tool":"claude-code","tools_used":["claude-code"]}}

@@ -1,0 +1,60 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: pip install -e ".[dev]"
+      - run:
+          name: Run tests
+          command: pytest
+      - run:
+          name: Lint
+          command: ruff check .
+
+  acp-provenance:
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - run:
+          name: Install git-whence
+          command: pip install -e .
+      - run:
+          name: Fetch ACP notes
+          command: git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true
+      - run:
+          name: Verify trace integrity
+          command: git whence verify origin/main..HEAD --policy integrity
+      - run:
+          name: Check co-author compliance
+          command: git whence verify origin/main..HEAD --policy co-author || true
+      - run:
+          name: Generate provenance report
+          command: |
+            git whence report origin/main..HEAD --format markdown > acp-summary.md
+            git whence report origin/main..HEAD --format json > acp-report.json
+      - run:
+          name: Post PR comment
+          command: |
+            if [ -n "$CIRCLE_PULL_REQUEST" ]; then
+              gh pr comment --body-file acp-summary.md
+            fi
+      - store_artifacts:
+          path: acp-report.json
+          destination: acp-report.json
+      - store_artifacts:
+          path: acp-summary.md
+          destination: acp-summary.md
+
+workflows:
+  build-and-verify:
+    jobs:
+      - test
+      - acp-provenance:
+          requires:
+            - test

@@ -30,6 +30,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Fetch full history and ACP notes
+          command: |
+            git fetch --unshallow || true
+            git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true
+      - run:
           name: Install git-whence
           command: pip install -e .
           working_directory: cli
@@ -37,19 +42,24 @@ jobs:
           name: Initialize ACP
           command: git whence init
       - run:
-          name: Fetch ACP notes
-          command: git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true
+          name: Determine commit range
+          command: |
+            if [ -n "$CIRCLE_PULL_REQUEST" ]; then
+              echo "export ACP_RANGE='origin/main..HEAD'" >> "$BASH_ENV"
+            else
+              echo "export ACP_RANGE='HEAD~1..HEAD'" >> "$BASH_ENV"
+            fi
       - run:
           name: Verify trace integrity
-          command: git whence verify origin/main..HEAD --policy integrity
+          command: git whence verify $ACP_RANGE --policy integrity
       - run:
           name: Check co-author compliance
-          command: git whence verify origin/main..HEAD --policy co-author || true
+          command: git whence verify $ACP_RANGE --policy co-author || true
       - run:
           name: Generate provenance report
           command: |
-            git whence report origin/main..HEAD --format markdown > acp-summary.md
-            git whence report origin/main..HEAD --format json > acp-report.json
+            git whence report $ACP_RANGE --format markdown > acp-summary.md
+            git whence report $ACP_RANGE --format json > acp-report.json
       - run:
           name: Post PR comment
           command: |

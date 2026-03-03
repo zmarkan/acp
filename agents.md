@@ -6,7 +6,7 @@
 
 ## What is this repo?
 
-ACP (AI Code Provenance) is an open standard for recording how AI contributed to a codebase. `git-whence` is its reference CLI implementation. Every AI-assisted commit in this repository carries a provenance trace — the prompts, tool metadata, and integrity hashes that explain *how* the code was produced.
+WHENCE is an open standard for recording how AI contributed to a codebase. `git-whence` is its reference CLI implementation. Every AI-assisted commit in this repository carries a provenance trace — the prompts, tool metadata, and integrity hashes that explain *how* the code was produced.
 
 ## Prerequisites
 
@@ -14,11 +14,11 @@ ACP (AI Code Provenance) is an open standard for recording how AI contributed to
 # Install git-whence from source (the CLI lives in cli/)
 cd cli && pip install -e . && cd ..
 
-# Initialize ACP in your working copy (idempotent)
+# Initialize WHENCE in your working copy (idempotent)
 git whence init
 
 # Fetch existing traces from the remote
-git fetch origin refs/notes/acp:refs/notes/acp
+git fetch origin refs/notes/whence:refs/notes/whence
 ```
 
 After installation, Git auto-discovers the `git-whence` binary — all commands work as `git whence <command>`.
@@ -27,11 +27,11 @@ After installation, Git auto-discovers the `git-whence` binary — all commands 
 
 ## The workflow
 
-ACP uses a **queue-then-attach** model. Events accumulate locally during development. You attach them to final-form commits after rebasing and cleanup.
+WHENCE uses a **queue-then-attach** model. Events accumulate locally during development. You attach them to final-form commits after rebasing and cleanup.
 
 ### 1. Record events as you work
 
-If your AI tool has native ACP integration (e.g. writes directly to `.git/acp/queue.ndjson`), events are captured automatically. Otherwise, record manually:
+If your AI tool has native WHENCE integration (e.g. writes directly to `.git/whence/queue.ndjson`), events are captured automatically. Otherwise, record manually:
 
 ```bash
 git whence record --tool claude-code \
@@ -47,7 +47,7 @@ echo "Your prompt here..." | git whence record --tool claude-code --prompt -
 
 ### 2. Work normally — commit, rebase, squash
 
-The queue is a plain file (`.git/acp/queue.ndjson`) outside Git's object store. Rebases, squashes, and amends don't touch it. Clean up your history however you like.
+The queue is a plain file (`.git/whence/queue.ndjson`) outside Git's object store. Rebases, squashes, and amends don't touch it. Clean up your history however you like.
 
 ### 3. Attach traces to final commits
 
@@ -62,13 +62,13 @@ git whence attach abc123
 git whence attach --dry-run
 ```
 
-Attach runs the redaction pipeline (secret scanning), computes integrity hashes, bundles events into a trace, and writes it as a Git note under `refs/notes/acp`.
+Attach runs the redaction pipeline (secret scanning), computes integrity hashes, bundles events into a trace, and writes it as a Git note under `refs/notes/whence`.
 
 ### 4. Push traces to the remote
 
 ```bash
 git whence push
-# Equivalent to: git push origin refs/notes/acp
+# Equivalent to: git push origin refs/notes/whence
 ```
 
 ---
@@ -114,9 +114,9 @@ git whence report origin/main..HEAD --format markdown
 
 ## CI integration
 
-This repository runs ACP verification in CI via GitHub Actions (`.github/workflows/acp-provenance.yml`). The pipeline:
+This repository runs WHENCE verification in CI via GitHub Actions (`.github/workflows/whence-provenance.yml`). The pipeline:
 
-1. Fetches ACP notes from the remote
+1. Fetches WHENCE notes from the remote
 2. Verifies trace integrity across all PR commits
 3. Checks co-author compliance (commits with `Co-authored-by: Claude` must have traces)
 4. Generates provenance reports (markdown + JSON)
@@ -151,7 +151,7 @@ git whence reattach --dry-run   # preview
 git whence reattach             # execute
 
 # If traces were already pushed, force-push the notes ref
-git push --force origin refs/notes/acp
+git push --force origin refs/notes/whence
 ```
 
 The recommended workflow avoids this: attach *after* rebasing, not before.
@@ -180,11 +180,11 @@ git whence queue export
 
 If you are an AI coding agent contributing to this repository:
 
-1. **Your contributions are recorded.** The human operator will attach ACP traces to commits that include your work. The prompt that initiated your session becomes part of the permanent provenance record.
+1. **Your contributions are recorded.** The human operator will attach WHENCE traces to commits that include your work. The prompt that initiated your session becomes part of the permanent provenance record.
 
 2. **Add the co-author trailer.** Include `Co-authored-by: Claude Opus 4.6 <noreply@anthropic.com>` (or the appropriate identifier) in commit messages. CI checks for this signal and verifies a matching trace exists.
 
-3. **Don't modify `.git/acp/` directly.** Use `git whence record` and `git whence attach` commands. The queue format and envelope format are specified — direct manipulation risks producing invalid traces.
+3. **Don't modify `.git/whence/` directly.** Use `git whence record` and `git whence attach` commands. The queue format and envelope format are specified — direct manipulation risks producing invalid traces.
 
 4. **Understand what gets shared.** In the default `hash-response` mode, your prompts are stored in full but your responses are hashed. In `full` mode, both are stored. In `hash-all` mode, both are hashed. The human operator chooses the mode.
 
@@ -196,7 +196,7 @@ If you are an AI coding agent contributing to this repository:
 
 | Task | Command |
 |------|---------|
-| Initialize ACP | `git whence init` |
+| Initialize WHENCE | `git whence init` |
 | Record a prompt | `git whence record --tool claude-code --prompt "..."` |
 | View the queue | `git whence queue list` |
 | Attach to HEAD | `git whence attach` |
@@ -213,6 +213,6 @@ If you are an AI coding agent contributing to this repository:
 
 ## Further reading
 
-- [SPEC.md](SPEC.md) — the full ACP specification (trace format, Git binding, guidance)
+- [SPEC.md](SPEC.md) — the full WHENCE specification (trace format, Git binding, guidance)
 - [cli/CLI.md](cli/CLI.md) — complete CLI reference with all flags and examples
 - [README.md](README.md) — project overview and quick start

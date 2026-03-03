@@ -1,4 +1,4 @@
-"""git whence reattach — Migrate orphaned ACP traces after history rewriting."""
+"""git whence reattach — Migrate orphaned WHENCE traces after history rewriting."""
 
 import json
 
@@ -9,7 +9,7 @@ from ..exitcodes import SUCCESS
 def register(subparsers):
     p = subparsers.add_parser(
         "reattach",
-        help="Migrate orphaned ACP traces after rebase/squash/amend",
+        help="Migrate orphaned WHENCE traces after rebase/squash/amend",
     )
     p.add_argument("--auto", action="store_true", help="Auto-confirm unambiguous mappings")
     p.add_argument("--dry-run", action="store_true", help="Show proposed mappings without writing")
@@ -18,12 +18,12 @@ def register(subparsers):
 
 
 def run(args) -> int:
-    git.ensure_acp_initialized()
+    git.ensure_whence_initialized()
 
     # Step 1: Find all notes and identify orphaned ones
     notes = git.notes_list()
     if not notes:
-        print("No ACP notes found")
+        print("No WHENCE notes found")
         return SUCCESS
 
     orphaned = []
@@ -43,10 +43,10 @@ def run(args) -> int:
             })
 
     if not orphaned:
-        print("No orphaned ACP traces found")
+        print("No orphaned WHENCE traces found")
         return SUCCESS
 
-    print(f"Found {len(orphaned)} orphaned ACP trace(s):")
+    print(f"Found {len(orphaned)} orphaned WHENCE trace(s):")
     print()
 
     # Step 2: Search reflog for mappings

@@ -1,4 +1,4 @@
-"""git whence show — Display ACP trace(s) attached to a commit."""
+"""git whence show — Display WHENCE trace(s) attached to a commit."""
 
 import json
 import sys
@@ -8,7 +8,7 @@ from ..exitcodes import SUCCESS, USER_ERROR, ENV_ERROR, POLICY_FAIL
 
 
 def register(subparsers):
-    p = subparsers.add_parser("show", help="Display ACP trace(s) attached to a commit")
+    p = subparsers.add_parser("show", help="Display WHENCE trace(s) attached to a commit")
     p.add_argument("commit", nargs="?", default="HEAD", help="Commit SHA or ref (default: HEAD)")
     p.add_argument(
         "--format",
@@ -24,7 +24,7 @@ def register(subparsers):
 
 
 def run(args) -> int:
-    git.ensure_acp_initialized()
+    git.ensure_whence_initialized()
 
     try:
         commit_sha = git.rev_parse(args.commit)
@@ -35,7 +35,7 @@ def run(args) -> int:
     # Read note
     note_content = git.notes_show(commit_sha)
     if not note_content:
-        print(f"No ACP trace on {commit_sha[:7]}", file=sys.stderr)
+        print(f"No WHENCE trace on {commit_sha[:7]}", file=sys.stderr)
         return USER_ERROR
 
     # Raw envelope output
@@ -47,11 +47,11 @@ def run(args) -> int:
     try:
         traces = envelope.parse_note_content(note_content)
     except (ValueError, json.JSONDecodeError) as e:
-        print(f"Error: failed to parse ACP note: {e}", file=sys.stderr)
+        print(f"Error: failed to parse WHENCE note: {e}", file=sys.stderr)
         return ENV_ERROR
 
     if not traces:
-        print(f"No valid ACP traces on {commit_sha[:7]}", file=sys.stderr)
+        print(f"No valid WHENCE traces on {commit_sha[:7]}", file=sys.stderr)
         return USER_ERROR
 
     # JSON output

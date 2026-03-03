@@ -33,7 +33,7 @@ def register(subparsers):
 
 
 def run(args) -> int:
-    git.ensure_acp_initialized()
+    git.ensure_whence_initialized()
     cfg = config.load()
 
     # Resolve target commit
@@ -75,7 +75,7 @@ def run(args) -> int:
     # Load custom redaction patterns
     custom_patterns = None
     if cfg.redact_patterns_file:
-        patterns_path = git.acp_dir() / cfg.redact_patterns_file
+        patterns_path = git.whence_dir() / cfg.redact_patterns_file
         custom_patterns = redaction.load_custom_patterns(patterns_path)
 
     # Run redaction pipeline

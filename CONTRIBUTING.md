@@ -1,6 +1,6 @@
-# Contributing to ACP
+# Contributing to WHENCE
 
-ACP is an open standard. Contributions are welcome — whether that's feedback on the spec, improvements to git-whence, new CI examples, or bug reports.
+WHENCE is an open standard. Contributions are welcome — whether that's feedback on the spec, improvements to git-whence, new CI examples, or bug reports.
 
 ## How to contribute
 
@@ -10,7 +10,7 @@ ACP is an open standard. Contributions are welcome — whether that's feedback o
 
 **Code contributions:** Fork the repo, create a branch, make your changes, open a PR. PRs should include tests for new functionality.
 
-**CI examples:** If you've set up ACP verification in a CI system not already covered (GitLab CI, Jenkins, Buildkite, etc.), we'd love to include it. Add your config to `examples/ci/` with a brief README explaining any platform-specific considerations.
+**CI examples:** If you've set up WHENCE verification in a CI system not already covered (GitLab CI, Jenkins, Buildkite, etc.), we'd love to include it. Add your config to `examples/ci/` with a brief README explaining any platform-specific considerations.
 
 ## Proposing spec changes
 
@@ -25,8 +25,8 @@ The spec is versioned. Changes follow different processes depending on scope:
 ## Development setup
 
 ```bash
-git clone https://github.com/zmarkan/acp.git
-cd acp
+git clone https://github.com/zmarkan/whence.git
+cd whence
 pip install -e ".[dev]"
 ```
 
@@ -42,9 +42,9 @@ Lint:
 ruff check .
 ```
 
-## ACP on ACP
+## WHENCE on WHENCE
 
-This repository uses ACP. AI-assisted commits carry provenance traces. If you use AI tools when contributing, we encourage you to record and attach traces to your commits:
+This repository uses WHENCE. AI-assisted commits carry provenance traces. If you use AI tools when contributing, we encourage you to record and attach traces to your commits:
 
 ```bash
 git whence init

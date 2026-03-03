@@ -1,4 +1,4 @@
-"""git whence log — Show ACP trace summaries across a range of commits."""
+"""git whence log — Show WHENCE trace summaries across a range of commits."""
 
 import json
 import sys
@@ -8,7 +8,7 @@ from ..exitcodes import SUCCESS, USER_ERROR
 
 
 def register(subparsers):
-    p = subparsers.add_parser("log", help="Show ACP trace summaries across commits")
+    p = subparsers.add_parser("log", help="Show WHENCE trace summaries across commits")
     p.add_argument(
         "revision_range",
         nargs="?",
@@ -34,13 +34,13 @@ def register(subparsers):
         action="store_true",
         help="Show compact summary without prompts",
     )
-    p.add_argument("--traced-only", action="store_true", help="Only show commits that have ACP traces")
+    p.add_argument("--traced-only", action="store_true", help="Only show commits that have WHENCE traces")
     p.add_argument("--stats", action="store_true", help="Show summary statistics")
     p.set_defaults(func=run)
 
 
 def run(args) -> int:
-    git.ensure_acp_initialized()
+    git.ensure_whence_initialized()
 
     # Resolve revision range: explicit range wins, otherwise use -n
     revision_range = args.revision_range if args.revision_range else f"HEAD~{args.num_commits}..HEAD"
@@ -106,7 +106,7 @@ def _output_text(entries: list[dict], args) -> int:
                 print()
         elif not args.traced_only:
             print(f"{sha} {msg}")
-            print("  (no ACP trace)")
+            print("  (no WHENCE trace)")
             print()
 
     if args.stats:

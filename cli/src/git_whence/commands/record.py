@@ -43,7 +43,7 @@ def register(subparsers):
 
 
 def run(args) -> int:
-    git.ensure_acp_initialized()
+    git.ensure_whence_initialized()
     cfg = config.load()
 
     # Read prompt

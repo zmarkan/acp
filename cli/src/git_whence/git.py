@@ -16,8 +16,8 @@ class NotAGitRepo(GitError):
     """Current directory is not inside a Git repository."""
 
 
-class ACPNotInitialized(GitError):
-    """ACP has not been initialized in this repository."""
+class WHENCENotInitialized(GitError):
+    """WHENCE has not been initialized in this repository."""
 
 
 def _run(args: list[str], *, check: bool = True, input: str | None = None) -> subprocess.CompletedProcess:
@@ -45,8 +45,8 @@ def git_root() -> Path:
         raise NotAGitRepo("not a Git repository")
 
 
-def acp_dir() -> Path:
-    """Return the .git/acp directory path."""
+def whence_dir() -> Path:
+    """Return the .git/whence directory path."""
     root = git_root()
     # Handle worktrees: .git might be a file pointing to the actual git dir
     git_path = root / ".git"
@@ -57,15 +57,15 @@ def acp_dir() -> Path:
             git_dir = Path(content[8:])
             if not git_dir.is_absolute():
                 git_dir = root / git_dir
-            return git_dir / "acp"
-    return git_path / "acp"
+            return git_dir / "whence"
+    return git_path / "whence"
 
 
-def ensure_acp_initialized() -> Path:
-    """Return acp_dir, raising ACPNotInitialized if it doesn't exist."""
-    d = acp_dir()
+def ensure_whence_initialized() -> Path:
+    """Return whence_dir, raising WHENCENotInitialized if it doesn't exist."""
+    d = whence_dir()
     if not (d / "config.json").exists():
-        raise ACPNotInitialized()
+        raise WHENCENotInitialized()
     return d
 
 
@@ -90,7 +90,7 @@ def is_working_tree_clean() -> bool:
     return result.stdout.strip() == ""
 
 
-def notes_show(commit: str, ref: str = "refs/notes/acp") -> str | None:
+def notes_show(commit: str, ref: str = "refs/notes/whence") -> str | None:
     """Read the note content for a commit, or None if no note exists."""
     result = _run(["notes", "--ref", ref, "show", commit], check=False)
     if result.returncode != 0:
@@ -98,7 +98,7 @@ def notes_show(commit: str, ref: str = "refs/notes/acp") -> str | None:
     return result.stdout
 
 
-def notes_add(commit: str, content: str, ref: str = "refs/notes/acp", force: bool = True) -> None:
+def notes_add(commit: str, content: str, ref: str = "refs/notes/whence", force: bool = True) -> None:
     """Write a note on a commit. Uses --file=- to pass content via stdin."""
     args = ["notes", "--ref", ref, "add"]
     if force:
@@ -107,7 +107,7 @@ def notes_add(commit: str, content: str, ref: str = "refs/notes/acp", force: boo
     _run(args, input=content)
 
 
-def notes_list(ref: str = "refs/notes/acp") -> list[tuple[str, str]]:
+def notes_list(ref: str = "refs/notes/whence") -> list[tuple[str, str]]:
     """List all notes as (note_object_sha, annotated_commit_sha) pairs."""
     result = _run(["notes", "--ref", ref, "list"], check=False)
     if result.returncode != 0:
@@ -121,7 +121,7 @@ def notes_list(ref: str = "refs/notes/acp") -> list[tuple[str, str]]:
     return pairs
 
 
-def notes_remove(commit: str, ref: str = "refs/notes/acp") -> None:
+def notes_remove(commit: str, ref: str = "refs/notes/whence") -> None:
     """Remove a note from a commit."""
     _run(["notes", "--ref", ref, "remove", commit], check=False)
 

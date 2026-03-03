@@ -1,14 +1,14 @@
-# ACP — AI Code Provenance
+# WHENCE
 
 An open standard for recording how AI contributed to your codebase.
 
-> This repository is built with ACP. Every AI-assisted commit carries a provenance trace. Run `git whence log` to see how the standard that defines provenance was itself built.
+> This repository is built with WHENCE. Every AI-assisted commit carries a provenance trace. Run `git whence log` to see how the standard that defines provenance was itself built.
 
 ## The problem
 
 Software is increasingly co-authored by humans and AI. The commit message says *what* changed, the diff shows *how*, but the reasoning — the prompts, the iterations, the intent — vanishes when the session closes.
 
-ACP closes that gap by providing:
+WHENCE closes that gap by providing:
 
 1. **A data format** for recording AI development events (prompts, tool metadata, session context) as immutable traces
 2. **A linking convention** for attaching those traces to version control artifacts (Git notes for the reference binding)
@@ -19,9 +19,9 @@ ACP closes that gap by providing:
 ### Viewing traces on this repo
 
 ```bash
-git clone https://github.com/zmarkan/acp.git
-cd acp
-git fetch origin refs/notes/acp:refs/notes/acp
+git clone https://github.com/zmarkan/whence.git
+cd whence
+git fetch origin refs/notes/whence:refs/notes/whence
 git whence log
 ```
 
@@ -31,10 +31,10 @@ Before the `git-whence` CLI exists, use the bootstrap script to attach traces ma
 
 ```bash
 # After an AI-assisted commit
-./scripts/acp-bootstrap.sh $(git rev-parse HEAD) claude-code "Your prompt here"
+./scripts/whence-bootstrap.sh $(git rev-parse HEAD) claude-code "Your prompt here"
 
 # Push traces to remote
-git push origin refs/notes/acp
+git push origin refs/notes/whence
 ```
 
 ### Recording traces (Phase 2 — git-whence)
@@ -54,7 +54,7 @@ git whence show <commit>
 git whence verify --policy integrity
 
 # Push traces
-git push origin refs/notes/acp
+git push origin refs/notes/whence
 ```
 
 ## How it works
@@ -82,7 +82,7 @@ Secrets are detected and redacted at write time, before traces are created. Once
 
 ## Supported tools
 
-ACP is tool-agnostic. Any AI coding tool can produce valid traces:
+WHENCE is tool-agnostic. Any AI coding tool can produce valid traces:
 
 | Identifier | Tool |
 |------------|------|
@@ -97,13 +97,13 @@ ACP is tool-agnostic. Any AI coding tool can produce valid traces:
 ## Repository structure
 
 ```
-acp/
+whence/
 ├── SPEC.md                    # The specification
 ├── LICENSE                    # Apache 2.0
 ├── CONTRIBUTING.md            # How to propose changes
 ├── README.md                  # This file
 ├── scripts/
-│   └── acp-bootstrap.sh       # Phase 1 manual trace attachment
+│   └── whence-bootstrap.sh    # Phase 1 manual trace attachment
 ├── cli/                       # git-whence source (planned)
 ├── examples/                  # Example traces (planned)
 └── schema/                    # JSON Schema for validation (planned)
@@ -112,20 +112,20 @@ acp/
 ## CI integration
 
 ```yaml
-acp-verify:
+whence-verify:
   steps:
-    - run: git fetch origin refs/notes/acp:refs/notes/acp
+    - run: git fetch origin refs/notes/whence:refs/notes/whence
     - run: git whence verify --policy integrity
     - run: git whence verify --policy co-author
-    - run: git whence report --format json > acp-report.json
+    - run: git whence report --format json > whence-report.json
 ```
 
 ## Specification
 
 The full specification is in [SPEC.md](SPEC.md). It covers:
 
-- **Part 1: Trace Format** — events, traces, redaction, hashing, integrity
-- **Part 2: ACP-Git Binding** — envelope format, Git notes, history rewriting, CI policies
+- **Part 1: WHENCE Trace Format** — events, traces, redaction, hashing, integrity
+- **Part 2: WHENCE Git Binding** — envelope format, Git notes, history rewriting, CI policies
 - **Part 3: Guidance** — size limits, review integration, alternative linking
 
 ## Contributing

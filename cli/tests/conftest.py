@@ -32,8 +32,8 @@ def tmp_git_repo(tmp_path):
 
 
 @pytest.fixture
-def acp_initialized(tmp_git_repo):
-    """A git repo with ACP already initialized."""
+def whence_initialized(tmp_git_repo):
+    """A git repo with WHENCE already initialized."""
     from git_whence.main import main
     result = main(["init"])
     assert result == 0

@@ -1,4 +1,4 @@
-"""ID generation for ACP traces and events."""
+"""ID generation for WHENCE traces and events."""
 
 import os
 from datetime import datetime, timezone

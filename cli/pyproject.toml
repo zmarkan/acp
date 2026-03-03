@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "git-whence"
 version = "0.1.0"
-description = "Reference implementation of ACP (AI Code Provenance)"
+description = "Reference implementation of WHENCE (WHENCE Helps Explain Non-obvious Code Edits)"
 readme = "CLI.md"
 license = "Apache-2.0"
 requires-python = ">=3.9"
 authors = [
-    { name = "ACP Contributors" }
+    { name = "WHENCE Contributors" }
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

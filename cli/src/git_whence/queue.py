@@ -1,4 +1,4 @@
-"""NDJSON event queue management (.git/acp/queue.ndjson).
+"""NDJSON event queue management (.git/whence/queue.ndjson).
 
 Events are appended during 'record' and consumed during 'attach'.
 The queue is a local scratch file -- never committed, never shared.
@@ -13,11 +13,11 @@ from . import git
 
 
 def queue_path() -> Path:
-    """Resolve queue path from ACP_QUEUE_PATH env or default."""
-    env_path = os.environ.get("ACP_QUEUE_PATH")
+    """Resolve queue path from WHENCE_QUEUE_PATH env or default."""
+    env_path = os.environ.get("WHENCE_QUEUE_PATH")
     if env_path:
         return Path(env_path)
-    return git.ensure_acp_initialized() / "queue.ndjson"
+    return git.ensure_whence_initialized() / "queue.ndjson"
 
 
 def read_events() -> list[dict]:

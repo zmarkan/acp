@@ -1,4 +1,4 @@
-"""git whence verify — Validate ACP traces against integrity rules and CI policies."""
+"""git whence verify — Validate WHENCE traces against integrity rules and CI policies."""
 
 import fnmatch
 import json
@@ -9,7 +9,7 @@ from ..exitcodes import SUCCESS, USER_ERROR, POLICY_FAIL
 
 
 def register(subparsers):
-    p = subparsers.add_parser("verify", help="Validate ACP traces against policies")
+    p = subparsers.add_parser("verify", help="Validate WHENCE traces against policies")
     p.add_argument(
         "revision_range",
         nargs="?",
@@ -46,7 +46,7 @@ def register(subparsers):
 
 
 def run(args) -> int:
-    git.ensure_acp_initialized()
+    git.ensure_whence_initialized()
 
     # Determine revision range
     revision_range = args.revision_range
@@ -247,29 +247,29 @@ def _validate_headers(trace_obj: dict, note_content: str) -> list[str]:
     if not headers:
         return errors
 
-    # ACP-Trace-Id
-    header_id = headers.get("acp-trace-id", "")
+    # WHENCE-Trace-Id
+    header_id = headers.get("whence-trace-id", "")
     body_id = trace_obj.get("trace_id", "")
     if header_id and body_id and header_id != body_id:
-        errors.append(f"header ACP-Trace-Id ({header_id}) != body trace_id ({body_id})")
+        errors.append(f"header WHENCE-Trace-Id ({header_id}) != body trace_id ({body_id})")
 
-    # ACP-Event-Count
-    header_count = headers.get("acp-event-count", "")
+    # WHENCE-Event-Count
+    header_count = headers.get("whence-event-count", "")
     body_count = str(trace_obj.get("event_count", ""))
     if header_count and body_count and header_count != body_count:
-        errors.append(f"header ACP-Event-Count ({header_count}) != body event_count ({body_count})")
+        errors.append(f"header WHENCE-Event-Count ({header_count}) != body event_count ({body_count})")
 
-    # ACP-Redaction
-    header_mode = headers.get("acp-redaction", "")
+    # WHENCE-Redaction
+    header_mode = headers.get("whence-redaction", "")
     body_mode = trace_obj.get("redaction_mode", "")
     if header_mode and body_mode and header_mode != body_mode:
-        errors.append(f"header ACP-Redaction ({header_mode}) != body redaction_mode ({body_mode})")
+        errors.append(f"header WHENCE-Redaction ({header_mode}) != body redaction_mode ({body_mode})")
 
     return errors
 
 
 def _verify_co_author(commit_data: list[dict], args) -> int:
-    """Check that commits with AI co-author signals have ACP traces."""
+    """Check that commits with AI co-author signals have WHENCE traces."""
     if not args.quiet:
         print("Verifying policy: co-author")
         print(f"Range: {len(commit_data)} commits")
@@ -301,7 +301,7 @@ def _verify_co_author(commit_data: list[dict], args) -> int:
         if not violations:
             print("Result: PASS (all co-authored commits have traces)")
         else:
-            print(f"Result: FAIL ({len(violations)} co-authored commit(s) without ACP trace)")
+            print(f"Result: FAIL ({len(violations)} co-authored commit(s) without WHENCE trace)")
 
     return POLICY_FAIL if violations else SUCCESS
 
@@ -385,7 +385,7 @@ def _verify_path_based(commit_data: list[dict], args) -> int:
 
 
 def _verify_attestation(commit_data: list[dict], args) -> int:
-    """Require either an ACP trace or a No-AI-Used trailer."""
+    """Require either a WHENCE trace or a No-AI-Used trailer."""
     if not args.quiet:
         print("Verifying policy: attestation")
         print(f"Range: {len(commit_data)} commits")
@@ -399,7 +399,7 @@ def _verify_attestation(commit_data: list[dict], args) -> int:
 
         if traces:
             if not args.quiet:
-                print(f"  {sha} has ACP trace")
+                print(f"  {sha} has WHENCE trace")
             continue
 
         # Check for No-AI-Used trailer

@@ -1,4 +1,4 @@
-"""ACP-Git envelope format: serialize and parse.
+"""WHENCE Git Binding envelope format: serialize and parse.
 
 The envelope wraps a trace with plain-text headers for human scannability
 and quick validation, followed by the compact JSON body.
@@ -11,12 +11,12 @@ def serialize(trace: dict) -> str:
     """Build an envelope string from a trace object.
 
     Format:
-        ACP-Spec-Version: 0.1.0
-        ACP-Trace-Id: <id>
-        ACP-Trace-Hash: sha256:<hash>
-        ACP-Event-Count: <n>
-        ACP-Tool: <tool>
-        ACP-Redaction: <mode>
+        WHENCE-Spec-Version: 0.1.0
+        WHENCE-Trace-Id: <id>
+        WHENCE-Trace-Hash: sha256:<hash>
+        WHENCE-Event-Count: <n>
+        WHENCE-Tool: <tool>
+        WHENCE-Redaction: <mode>
 
         {"spec_version":"0.1.0",...}
     """
@@ -25,12 +25,12 @@ def serialize(trace: dict) -> str:
         tool = trace["tool_summary"]["primary_tool"]
 
     headers = [
-        f"ACP-Spec-Version: {trace['spec_version']}",
-        f"ACP-Trace-Id: {trace['trace_id']}",
-        f"ACP-Trace-Hash: {trace['integrity']['trace_hash']}",
-        f"ACP-Event-Count: {trace['event_count']}",
-        f"ACP-Tool: {tool}",
-        f"ACP-Redaction: {trace['redaction_mode']}",
+        f"WHENCE-Spec-Version: {trace['spec_version']}",
+        f"WHENCE-Trace-Id: {trace['trace_id']}",
+        f"WHENCE-Trace-Hash: {trace['integrity']['trace_hash']}",
+        f"WHENCE-Event-Count: {trace['event_count']}",
+        f"WHENCE-Tool: {tool}",
+        f"WHENCE-Redaction: {trace['redaction_mode']}",
     ]
     # Compact single-line JSON body (not canonical -- canonical is only for hashing)
     body = json.dumps(trace, separators=(",", ":"), ensure_ascii=False)
@@ -42,7 +42,7 @@ def parse_note_content(content: str) -> list[dict]:
 
     Implements the three consumer rules from the spec:
     1. Primary: split on \\n---\\n to get individual records
-    2. Fallback: scan for ACP-Spec-Version: headers as record boundaries
+    2. Fallback: scan for WHENCE-Spec-Version: headers as record boundaries
     3. Bare JSON: content starts with { or [
     """
     content = content.strip()
@@ -61,11 +61,11 @@ def parse_note_content(content: str) -> list[dict]:
         return [_parse_single_record(r.strip()) for r in records if r.strip()]
 
     # Single record or fallback
-    # Check if there are multiple ACP-Spec-Version: headers (fallback for concatenated notes)
+    # Check if there are multiple WHENCE-Spec-Version: headers (fallback for concatenated notes)
     lines = content.split("\n")
     header_indices = [
         i for i, line in enumerate(lines)
-        if line.lower().startswith("acp-spec-version:")
+        if line.lower().startswith("whence-spec-version:")
     ]
 
     if len(header_indices) <= 1:

@@ -1,4 +1,4 @@
-# ACP — AI Code Provenance
+# WHENCE
 
 ### An open standard for recording how AI contributed to your codebase
 
@@ -15,31 +15,31 @@ This matters because:
 - **Institutional knowledge is lost.** The same way commit messages preserve *why* a change was made, prompt history preserves *how* a team uses AI — their patterns, their shortcuts, their mistakes. Without records, every developer starts from zero.
 - **Supply chain accountability has a gap.** We have SBOMs for dependencies, signed commits for authorship, and SLSA for build provenance. But there's no equivalent for AI contributions — the fastest-growing input to modern codebases.
 
-ACP closes that gap.
+WHENCE closes that gap.
 
 ---
 
-## What ACP is
+## What WHENCE is
 
-ACP is three things:
+WHENCE is three things:
 
 1. **A data format** — a specification for recording AI development events (prompts, tool metadata, session context) and bundling them into immutable traces.
 2. **A linking convention** — a standard way to attach those traces to version control artifacts, with a defined binding for Git.
 3. **A set of principles** — shared by default, redacted at write time, tool-agnostic, and built to survive real-world development workflows.
 
-ACP is **not** a product, a platform, or a service. It's an open interchange format. Any tool can produce ACP traces. Any CI system can consume them. The reference implementation is a CLI, but the standard lives independently.
+WHENCE is **not** a product, a platform, or a service. It's an open interchange format. Any tool can produce WHENCE traces. Any CI system can consume them. The reference implementation is a CLI, but the standard lives independently.
 
 ---
 
 ## Specification layers
 
-ACP consists of two layers:
+WHENCE consists of two layers:
 
-**The Trace Format** (Part 1) defines the data model for events, traces, redaction, and integrity verification. It is transport-agnostic and can be implemented independently of any linking mechanism.
+**WHENCE Trace Format** (Part 1) defines the data model for events, traces, redaction, and integrity verification. It is transport-agnostic and can be implemented independently of any linking mechanism.
 
-**A Linking Binding** (Part 2) defines how traces attach to version control artifacts. This spec defines one binding: **ACP-Git**, which uses Git notes under `refs/notes/acp`. Future revisions may define additional bindings (GitHub Checks API, Bitbucket Code Insights, GitLab CI metadata, etc.).
+**WHENCE Git Binding** (Part 2) defines how traces attach to version control artifacts. This spec defines one binding: **WHENCE Git Binding**, which uses Git notes under `refs/notes/whence`. Future revisions may define additional bindings (GitHub Checks API, Bitbucket Code Insights, GitLab CI metadata, etc.).
 
-The trace format is the standard. An ACP trace is valid regardless of where it's stored. Bindings define how traces connect to the things they describe.
+The trace format is the standard. A WHENCE trace is valid regardless of where it's stored. Bindings define how traces connect to the things they describe.
 
 ---
 
@@ -47,19 +47,19 @@ The trace format is the standard. An ACP trace is valid regardless of where it's
 
 ### 1. Shared by default
 
-ACP traces exist so that reviewers can see intent, auditors can verify provenance, and teams can build institutional knowledge. None of that works if traces stay on a developer's laptop. ACP traces are designed to be shared. Local-only operation is available but is opt-out, not opt-in. Organizations with strict compliance requirements may default to `hash-all` mode, which shares trace structure and metadata while keeping all content as hashes.
+WHENCE traces exist so that reviewers can see intent, auditors can verify provenance, and teams can build institutional knowledge. None of that works if traces stay on a developer's laptop. WHENCE traces are designed to be shared. Local-only operation is available but is opt-out, not opt-in. Organizations with strict compliance requirements may default to `hash-all` mode, which shares trace structure and metadata while keeping all content as hashes.
 
 ### 2. Redacted at write time
 
-Because traces are shared, sensitive content must be caught before it enters storage. ACP runs secret detection and redaction at **attach time** — the moment events move from the local queue into a trace record. Once a trace is written, it's treated as immutable. Redaction is prevention, not remediation.
+Because traces are shared, sensitive content must be caught before it enters storage. WHENCE runs secret detection and redaction at **attach time** — the moment events move from the local queue into a trace record. Once a trace is written, it's treated as immutable. Redaction is prevention, not remediation.
 
 ### 3. Don't pollute history
 
-The ACP-Git binding uses Git notes as the linking mechanism. Notes attach metadata to commits without changing commit hashes and without cluttering `git log`.
+The WHENCE Git Binding uses Git notes as the linking mechanism. Notes attach metadata to commits without changing commit hashes and without cluttering `git log`.
 
 ### 4. Tool-agnostic
 
-The format doesn't assume any particular AI tool. A trace produced by Claude Code, Codex, Cursor, a custom wrapper, or a manual entry should all be valid ACP.
+The format doesn't assume any particular AI tool. A trace produced by Claude Code, Codex, Cursor, a custom wrapper, or a manual entry should all be valid WHENCE.
 
 ### 5. Machine-readable, human-scannable
 
@@ -67,7 +67,7 @@ Traces are structured data with plain-text envelopes. Both are parseable by scri
 
 ### 6. Survive real workflows
 
-Developers squash, rebase, amend, and force-push. ACP is designed around this. The local queue survives history rewriting. Traces attach to final-form commits. Recovery behaviour for edge cases is implementation-defined.
+Developers squash, rebase, amend, and force-push. WHENCE is designed around this. The local queue survives history rewriting. Traces attach to final-form commits. Recovery behaviour for edge cases is implementation-defined.
 
 ---
 
@@ -88,19 +88,19 @@ Development phase:              Attach phase:              Share phase:
 
 ---
 
-# Part 1: Trace Format
+# Part 1: WHENCE Trace Format
 
 Everything in this section is binding-agnostic.
 
 ## Spec version
 
-All ACP artifacts include a `spec_version` field. The current version is `0.1.0`. Consumers must check this field and handle unknown versions gracefully.
+All WHENCE artifacts include a `spec_version` field. The current version is `0.1.0`. Consumers must check this field and handle unknown versions gracefully.
 
 ## Events
 
-An **event** is the atomic unit of ACP: one user-issued prompt interaction with an AI tool. Events inherit redaction rules from their enclosing trace; events do not carry their own `redaction_mode`.
+An **event** is the atomic unit of WHENCE: one user-issued prompt interaction with an AI tool. Events inherit redaction rules from their enclosing trace; events do not carry their own `redaction_mode`.
 
-In v0.1, ACP does not standardize sub-prompt tool calls or multi-step agent actions. Producers should record one event per user-issued prompt. Internal tool calls, file edits, and iterative agent steps within a single prompt may be represented as additional events in future spec versions.
+In v0.1, WHENCE does not standardize sub-prompt tool calls or multi-step agent actions. Producers should record one event per user-issued prompt. Internal tool calls, file edits, and iterative agent steps within a single prompt may be represented as additional events in future spec versions.
 
 ```json
 {
@@ -134,7 +134,7 @@ In v0.1, ACP does not standardize sub-prompt tool calls or multi-step agent acti
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `spec_version` | string | ACP spec version (semver) |
+| `spec_version` | string | WHENCE spec version (semver) |
 | `event_id` | string | Unique identifier (prefixed `evt_`) |
 | `timestamp` | string | ISO 8601 UTC |
 | `prompt_hash` | string | SHA-256 of normalized, post-redaction prompt text, prefixed `sha256:` |
@@ -178,7 +178,7 @@ When `response_captured` is `false`, producers should populate `context.patch_ha
 
 ### Code provenance context
 
-The optional `context` object captures what code the AI tool had access to and what changes resulted. This is what makes ACP "code provenance" rather than a prompt diary.
+The optional `context` object captures what code the AI tool had access to and what changes resulted. This is what makes WHENCE "code provenance" rather than a prompt diary.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -237,7 +237,7 @@ A **trace** bundles one or more events into a record linked to a version control
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `spec_version` | string | ACP spec version |
+| `spec_version` | string | WHENCE spec version |
 | `trace_id` | string | Unique identifier (timestamp + random suffix) |
 | `created_at` | string | ISO 8601 UTC |
 | `target` | object | The artifact this trace is linked to |
@@ -308,7 +308,7 @@ Implementations must scan for and replace:
 | Private keys | `[REDACTED:private-key]` | `-----BEGIN ... PRIVATE KEY-----` blocks |
 | User-defined patterns | `[REDACTED:custom]` | Patterns from user-configured redaction rules |
 
-**Note on PII:** ACP is not a data loss prevention system. The patterns above target secrets and credentials. Teams handling PII or customer data should use `hash-all` mode and implement additional scanning appropriate to their compliance requirements.
+**Note on PII:** WHENCE is not a data loss prevention system. The patterns above target secrets and credentials. Teams handling PII or customer data should use `hash-all` mode and implement additional scanning appropriate to their compliance requirements.
 
 ### Failure behaviour
 
@@ -316,7 +316,7 @@ If the scanner detects a high-confidence secret (private key blocks, AWS key for
 
 ### Post-hoc remediation
 
-If a secret enters a shared trace, remediation is binding-specific (see ACP-Git binding). In all cases: **treat the secret as compromised and rotate it immediately.**
+If a secret enters a shared trace, remediation is binding-specific (see WHENCE Git Binding). In all cases: **treat the secret as compromised and rotate it immediately.**
 
 ---
 
@@ -345,14 +345,14 @@ Before hashing any text content (prompts, responses, patches):
 
 ### Canonical JSON for trace hashing
 
-ACP uses a canonical JSON encoding aligned with RFC 8785 (JSON Canonicalization Scheme):
+WHENCE uses a canonical JSON encoding aligned with RFC 8785 (JSON Canonicalization Scheme):
 
 1. Serialize the trace object as JSON
 2. **Exclude** the `integrity` object from the serialization
 3. Sort all object keys lexicographically (Unicode code point order) at every nesting level
 4. Arrays preserve their original element order
 5. Use compact encoding: no whitespace between tokens (no spaces after `:` or `,`)
-6. Strings: escape `"`, `\`, and control characters U+0000–U+001F; all other characters appear as literal UTF-8. ACP does not perform Unicode normalization (NFC/NFD); strings are serialized as given after redaction.
+6. Strings: escape `"`, `\`, and control characters U+0000–U+001F; all other characters appear as literal UTF-8. WHENCE does not perform Unicode normalization (NFC/NFD); strings are serialized as given after redaction.
 7. Numbers: shortest representation, no trailing zeros, no leading zeros, no positive sign. Producers should avoid non-integer numbers where possible for canonicalization simplicity.
 8. Encode the result as UTF-8 and hash the byte sequence
 
@@ -362,7 +362,7 @@ Implementations should validate their canonical JSON output against test vectors
 
 ## Tool registration
 
-ACP maintains a non-normative registry of known tool identifiers:
+WHENCE maintains a non-normative registry of known tool identifiers:
 
 | Identifier | Tool |
 |------------|------|
@@ -379,13 +379,13 @@ Tool identifiers should use lowercase alphanumeric characters and hyphens. Produ
 
 ---
 
-# Part 2: ACP-Git Binding
+# Part 2: WHENCE Git Binding
 
-The ACP-Git binding defines how ACP traces attach to Git commits using Git notes.
+The WHENCE Git Binding defines how WHENCE traces attach to Git commits using Git notes.
 
 ## Target type
 
-For ACP-Git, the trace `target` must be:
+For the WHENCE Git Binding, the trace `target` must be:
 
 ```json
 {
@@ -398,21 +398,21 @@ The `id` is the canonical commit object name as returned by `git rev-parse <comm
 
 ## Notes ref
 
-ACP-Git uses the ref `refs/notes/acp`.
+The WHENCE Git Binding uses the ref `refs/notes/whence`.
 
 ## Envelope format
 
-ACP-Git stores traces in an **envelope format** — plain-text headers followed by a compact JSON body. This is designed for human scannability and safe multi-trace appending.
+The WHENCE Git Binding stores traces in an **envelope format** — plain-text headers followed by a compact JSON body. This is designed for human scannability and safe multi-trace appending.
 
 ### Single trace
 
 ```
-ACP-Spec-Version: 0.1.0
-ACP-Trace-Id: 20260228T103215Z_7f2c
-ACP-Trace-Hash: sha256:a1b2c3...
-ACP-Event-Count: 5
-ACP-Tool: claude-code
-ACP-Redaction: hash-response
+WHENCE-Spec-Version: 0.1.0
+WHENCE-Trace-Id: 20260228T103215Z_7f2c
+WHENCE-Trace-Hash: sha256:a1b2c3...
+WHENCE-Event-Count: 5
+WHENCE-Tool: claude-code
+WHENCE-Redaction: hash-response
 
 {"spec_version":"0.1.0","trace_id":"20260228T103215Z_7f2c",...}
 ```
@@ -422,21 +422,21 @@ ACP-Redaction: hash-response
 Multiple traces are separated by a line containing exactly `---`:
 
 ```
-ACP-Spec-Version: 0.1.0
-ACP-Trace-Id: 20260228T103215Z_7f2c
-ACP-Trace-Hash: sha256:a1b2c3...
-ACP-Event-Count: 5
-ACP-Tool: claude-code
-ACP-Redaction: hash-response
+WHENCE-Spec-Version: 0.1.0
+WHENCE-Trace-Id: 20260228T103215Z_7f2c
+WHENCE-Trace-Hash: sha256:a1b2c3...
+WHENCE-Event-Count: 5
+WHENCE-Tool: claude-code
+WHENCE-Redaction: hash-response
 
 {"spec_version":"0.1.0","trace_id":"20260228T103215Z_7f2c",...}
 ---
-ACP-Spec-Version: 0.1.0
-ACP-Trace-Id: 20260228T154500Z_9a3e
-ACP-Trace-Hash: sha256:d4e5f6...
-ACP-Event-Count: 3
-ACP-Tool: codex
-ACP-Redaction: hash-response
+WHENCE-Spec-Version: 0.1.0
+WHENCE-Trace-Id: 20260228T154500Z_9a3e
+WHENCE-Trace-Hash: sha256:d4e5f6...
+WHENCE-Event-Count: 3
+WHENCE-Tool: codex
+WHENCE-Redaction: hash-response
 
 {"spec_version":"0.1.0","trace_id":"20260228T154500Z_9a3e",...}
 ```
@@ -453,19 +453,19 @@ ACP-Redaction: hash-response
 
 | Header | Description |
 |--------|-------------|
-| `ACP-Spec-Version` | Spec version of this trace |
-| `ACP-Trace-Id` | Trace identifier |
-| `ACP-Trace-Hash` | Integrity hash of the JSON body |
-| `ACP-Event-Count` | Number of events in the trace |
-| `ACP-Tool` | Primary tool identifier |
-| `ACP-Redaction` | Redaction mode used |
+| `WHENCE-Spec-Version` | Spec version of this trace |
+| `WHENCE-Trace-Id` | Trace identifier |
+| `WHENCE-Trace-Hash` | Integrity hash of the JSON body |
+| `WHENCE-Event-Count` | Number of events in the trace |
+| `WHENCE-Tool` | Primary tool identifier |
+| `WHENCE-Redaction` | Redaction mode used |
 
-**Header–body relationship:** The JSON body is the canonical source of truth. Headers are informational summaries for scanning and quick validation. Consumers should validate that `ACP-Trace-Id`, `ACP-Event-Count`, and `ACP-Redaction` match the corresponding fields in the JSON body. Mismatches indicate a malformed record.
+**Header–body relationship:** The JSON body is the canonical source of truth. Headers are informational summaries for scanning and quick validation. Consumers should validate that `WHENCE-Trace-Id`, `WHENCE-Event-Count`, and `WHENCE-Redaction` match the corresponding fields in the JSON body. Mismatches indicate a malformed record.
 
 ### Consumer rules
 
 1. **Primary parsing:** Split note content on `\n---\n` to get individual records. For each record, split on the first blank line to separate headers from JSON body. Parse the JSON body as a trace object.
-2. **Fallback for concatenated notes:** If `---` separators are missing (e.g., due to `notes.rewriteMode concatenate`), scan for lines starting with `ACP-Spec-Version:` as record boundaries. For each record: read headers until blank line, then read the next non-empty line as the JSON body.
+2. **Fallback for concatenated notes:** If `---` separators are missing (e.g., due to `notes.rewriteMode concatenate`), scan for lines starting with `WHENCE-Spec-Version:` as record boundaries. For each record: read headers until blank line, then read the next non-empty line as the JSON body.
 3. **Bare JSON fallback:** If the note content starts with `{`, treat it as a single trace object. If it starts with `[`, treat it as a JSON array where each element is an independent trace object. This supports forward compatibility with alternative producers.
 4. Headers are case-insensitive for matching purposes.
 
@@ -474,20 +474,20 @@ ACP-Redaction: hash-response
 ### Pushing notes (default and recommended)
 
 ```bash
-git push origin refs/notes/acp
+git push origin refs/notes/whence
 ```
 
 Teams should configure automatic fetching:
 
 ```ini
 [remote "origin"]
-    fetch = +refs/notes/acp:refs/notes/acp
+    fetch = +refs/notes/whence:refs/notes/whence
 ```
 
 Without this, notes must be fetched explicitly:
 
 ```bash
-git fetch origin refs/notes/acp:refs/notes/acp
+git fetch origin refs/notes/whence:refs/notes/whence
 ```
 
 ### What travels with the note
@@ -498,15 +498,15 @@ The note is self-contained. It carries the full trace including all event data (
 
 Teams that require local-only traces don't push the notes ref. This is opt-out, not opt-in.
 
-## Post-hoc remediation (ACP-Git)
+## Post-hoc remediation (WHENCE Git Binding)
 
 If a secret enters a pushed note:
 
 1. Overwrite the note locally with corrected envelope content
-2. Force-push the notes ref: `git push --force origin refs/notes/acp`
+2. Force-push the notes ref: `git push --force origin refs/notes/whence`
 3. **Treat the secret as compromised.** Rotate immediately.
 
-ACP treats traces as immutable by convention. ACP-Git remediation may overwrite notes for secret removal; such overwrites should be treated as history-altering events equivalent to rewriting published metadata. Overwriting a note doesn't rewrite commit history — only the notes ref changes.
+WHENCE treats traces as immutable by convention. WHENCE Git Binding remediation may overwrite notes for secret removal; such overwrites should be treated as history-altering events equivalent to rewriting published metadata. Overwriting a note doesn't rewrite commit history — only the notes ref changes.
 
 ## History rewriting: rebases, squashes, and amends
 
@@ -556,23 +556,23 @@ This is **best-effort**. Ambiguous mappings require user confirmation. The imple
 If you've pushed notes then rebased and force-pushed a branch:
 
 1. Reattach locally
-2. Force-push the notes ref: `git push --force origin refs/notes/acp`
+2. Force-push the notes ref: `git push --force origin refs/notes/whence`
 
 CI systems should handle missing notes gracefully during the window between a branch force-push and the notes force-push.
 
 ### Configuration for automatic note rewriting
 
 ```bash
-git config notes.rewriteRef refs/notes/acp
+git config notes.rewriteRef refs/notes/whence
 git config notes.rewriteMode concatenate
 ```
 
-When Git concatenates notes, it may produce records without `---` separators. Consumers handle this via the fallback parsing rule (scan for `ACP-Spec-Version:` headers). The attach-late workflow is the primary recommendation.
+When Git concatenates notes, it may produce records without `---` separators. Consumers handle this via the fallback parsing rule (scan for `WHENCE-Spec-Version:` headers). The attach-late workflow is the primary recommendation.
 
-## Local storage (ACP-Git)
+## Local storage (WHENCE Git Binding)
 
 ```
-.git/acp/
+.git/whence/
 ├── config.json              # Local configuration
 ├── queue.ndjson             # Pending events (local buffer)
 └── redact_patterns.txt      # User-defined redaction patterns (optional)
@@ -583,7 +583,7 @@ When Git concatenates notes, it may produce records without `---` separators. Co
 ```json
 {
   "spec_version": "0.1.0",
-  "notes_ref": "refs/notes/acp",
+  "notes_ref": "refs/notes/whence",
   "default_redaction": "hash-response",
   "default_tool": null,
   "max_queue_events": 5000
@@ -594,22 +594,22 @@ When Git concatenates notes, it may produce records without `---` separators. Co
 
 One JSON event per line. Events are appended during development and consumed when `attach` runs. The queue is a local scratch file — never committed, never shared, never enters a Git object.
 
-## Compliance and verification (ACP-Git)
+## Compliance and verification (WHENCE Git Binding)
 
-### Detecting ACP
+### Detecting WHENCE
 
-A repository uses ACP if the ref `refs/notes/acp` exists and contains at least one valid envelope record.
+A repository uses WHENCE if the ref `refs/notes/whence` exists and contains at least one valid envelope record.
 
 ### Validating a trace
 
 A trace is valid if:
 
 1. The envelope record has all required headers
-2. `ACP-Trace-Id`, `ACP-Event-Count`, and `ACP-Redaction` headers match the JSON body
+2. `WHENCE-Trace-Id`, `WHENCE-Event-Count`, and `WHENCE-Redaction` headers match the JSON body
 3. The JSON body parses and contains all required trace fields
 4. `spec_version` is a recognized version
 5. `event_count` matches the length of `events`
-6. `ACP-Trace-Hash` matches the recomputed canonical JSON hash
+6. `WHENCE-Trace-Hash` matches the recomputed canonical JSON hash
 7. Each event's `prompt_hash` matches the SHA-256 of its stored, normalized `prompt` (when present)
 8. Events with `"redacted": true` contain at least one `[REDACTED:...]` token
 9. Events with `"response_captured": false` do not have `response_hash` or `response` fields
@@ -621,34 +621,34 @@ AI-assisted code is entering pipelines faster than teams can review it. Provenan
 
 **What CI can do:** verify that traces present on commits are structurally valid and integrity-checked, report what proportion of commits carry traces, require attestation for commits that don't, and enforce trace requirements on specific paths or branches.
 
-**What CI cannot do:** determine whether a commit without a trace was genuinely hand-written or was AI-assisted with no trace attached. ACP can verify provenance that exists. It cannot prove a negative. Policies should be designed with this limitation in mind.
+**What CI cannot do:** determine whether a commit without a trace was genuinely hand-written or was AI-assisted with no trace attached. WHENCE can verify provenance that exists. It cannot prove a negative. Policies should be designed with this limitation in mind.
 
-**Important nuance: some tools self-identify.** Some AI coding tools add co-author signals to commits — for example, Claude Code adds a `Co-authored-by` trailer. When present, these signals give CI a reliable detection mechanism: a commit that self-identifies as AI-assisted but carries no ACP trace is a verifiable policy violation. However, many tools (Codex, Cursor, Copilot, and any manual copy-paste from a chat interface) do not add co-author signals. For those commits, CI cannot distinguish AI-assisted from hand-written. Policies should account for this asymmetry.
+**Important nuance: some tools self-identify.** Some AI coding tools add co-author signals to commits — for example, Claude Code adds a `Co-authored-by` trailer. When present, these signals give CI a reliable detection mechanism: a commit that self-identifies as AI-assisted but carries no WHENCE trace is a verifiable policy violation. However, many tools (Codex, Cursor, Copilot, and any manual copy-paste from a chat interface) do not add co-author signals. For those commits, CI cannot distinguish AI-assisted from hand-written. Policies should account for this asymmetry.
 
 Example pipeline step:
 
 ```yaml
 # .circleci/config.yml (or equivalent)
-acp-verify:
+whence-verify:
   steps:
     - run: git whence verify --policy integrity
     - run: git whence verify --policy co-author  # flag AI co-authored commits without traces
-    - run: git whence report --format json > acp-report.json
+    - run: git whence report --format json > whence-report.json
     - store_artifacts:
-        path: acp-report.json
+        path: whence-report.json
 ```
 
 ### Recommended CI policies
 
 **Integrity (always recommended):** All traces present on commits in the PR are structurally valid — hashes match, events conform to the trace redaction mode, required fields are present. This catches malformed or tampered traces. It says nothing about commits without traces.
 
-**Coverage reporting (recommended starting point):** Report the percentage of commits in the PR that carry ACP traces, the tools used, and event counts. Non-blocking. Gives teams visibility into AI-assisted development patterns before enforcing anything.
+**Coverage reporting (recommended starting point):** Report the percentage of commits in the PR that carry WHENCE traces, the tools used, and event counts. Non-blocking. Gives teams visibility into AI-assisted development patterns before enforcing anything.
 
 **Coverage threshold:** Require that a minimum percentage of commits (e.g., 50%) carry valid traces, or that at least one commit per PR has a trace. Commits without traces are permitted — they may be hand-written, config changes, or merge commits.
 
 **Path-based:** Require valid traces on commits that touch specified paths (e.g., `src/auth/`, `security/`, `infrastructure/`). Commits touching other paths are not checked for trace presence. Useful for high-risk areas where provenance matters most.
 
-**Co-author-aware:** Commits containing AI co-author signals (e.g., `Co-authored-by` trailers from Claude Code) must have a valid ACP trace. This is the strongest enforceable policy because the tool has self-identified — a commit that says it was AI-assisted but carries no provenance is a clear violation. Commits without co-author signals are not blocked but may still be subject to coverage reporting.
+**Co-author-aware:** Commits containing AI co-author signals (e.g., `Co-authored-by` trailers from Claude Code) must have a valid WHENCE trace. This is the strongest enforceable policy because the tool has self-identified — a commit that says it was AI-assisted but carries no provenance is a clear violation. Commits without co-author signals are not blocked but may still be subject to coverage reporting.
 
 **Attestation:** Commits without traces and without co-author signals require an explicit `No-AI-Used` trailer or equivalent. This shifts the burden to developers to attest when they *didn't* use AI. Teams should understand that this is a social contract, not a technical guarantee — it relies on developer honesty for tools that don't self-identify.
 
@@ -660,7 +660,7 @@ Teams should start with integrity checking and coverage reporting, then adopt st
 
 ## Size and retention
 
-ACP does not impose hard size limits in v0.1. Recommended guidance:
+WHENCE does not impose hard size limits in v0.1. Recommended guidance:
 
 - **Aim to keep individual traces under 256KB.** This keeps note operations fast and tooling responsive.
 - **For long sessions (50+ events), split** across multiple traces on the same commit rather than creating one large trace.
@@ -670,7 +670,7 @@ Future spec revisions may introduce normative size limits based on real-world us
 
 ## Review integration
 
-ACP traces carry the context that code review currently lacks. The goal is not a separate "provenance page" that reviewers have to visit — it's making AI development context available at the point of review, where it changes decisions.
+WHENCE traces carry the context that code review currently lacks. The goal is not a separate "provenance page" that reviewers have to visit — it's making AI development context available at the point of review, where it changes decisions.
 
 ### Level 1: PR summary (CI-generated)
 
@@ -678,20 +678,20 @@ The simplest integration. A CI job runs `git whence report` across all commits i
 
 ```yaml
 # Pipeline step
-acp-review-summary:
+whence-review-summary:
   steps:
-    - run: git fetch origin refs/notes/acp:refs/notes/acp
+    - run: git fetch origin refs/notes/whence:refs/notes/whence
     - run: |
         git whence report \
           --commits $(git log --format=%H origin/main..HEAD) \
-          --format markdown > acp-summary.md
-    - run: gh pr comment --body-file acp-summary.md
+          --format markdown > whence-summary.md
+    - run: gh pr comment --body-file whence-summary.md
 ```
 
 The summary answers the questions reviewers actually ask:
 
 ```markdown
-## ACP Provenance Summary
+## WHENCE Provenance Summary
 
 **AI-assisted commits:** 4 of 6 (67%)
 **Tools used:** claude-code (3 commits), codex (1 commit)
@@ -703,8 +703,8 @@ The summary answers the questions reviewers actually ask:
 | d4e5f6a | claude-code | 3 | "Optimize query for user lookup" → 1 iteration, "Add index migration" → 2 iterations |
 | 7g8h9i0 | codex | 2 | "Generate API client from OpenAPI spec" → 1 iteration, "Fix type errors in generated client" → 1 iteration |
 | b2c3d4e | claude-code | 2 | "Update error handling to match new middleware pattern" → 2 iterations |
-| e5f6a7b | — | — | No ACP trace (hand-written or untracked) |
-| f6a7b8c | — | — | No ACP trace (hand-written or untracked) |
+| e5f6a7b | — | — | No WHENCE trace (hand-written or untracked) |
+| f6a7b8c | — | — | No WHENCE trace (hand-written or untracked) |
 
 **Commits with co-author signals but no trace:** 0
 **Integrity:** All traces valid ✓
@@ -734,7 +734,7 @@ The `--context` output is particularly useful for reviewers. When `input_artifac
 
 ### Level 3: Inline annotations (future bindings)
 
-The full vision requires platform-specific bindings (ACP-GitHub, ACP-Bitbucket, ACP-GitLab). These would surface trace data inline in the diff view:
+The full vision requires platform-specific bindings (WHENCE-GitHub, WHENCE-Bitbucket, WHENCE-GitLab). These would surface trace data inline in the diff view:
 
 - Hovering over a function shows the prompt that generated it and the iteration count
 - Files are annotated with whether they were AI-generated, AI-modified, or untouched
@@ -752,7 +752,7 @@ Event count per commit is a proxy for refinement. A single event means the devel
 
 Prompt text (in `full` or `hash-response` mode) reveals intent. "Optimize for readability" and "optimize for performance" produce very different code that looks equally valid in a diff. Knowing the intent changes the review.
 
-## Optional: alternative linking mechanisms (ACP-Git)
+## Optional: alternative linking mechanisms (WHENCE Git Binding)
 
 ### Commit trailers
 
@@ -761,9 +761,9 @@ For teams that want AI provenance visible in `git log`:
 ```
 feat: refactor auth middleware
 
-ACP-Trace-Id: 20260228T103215Z_7f2c
-ACP-Trace-Hash: sha256:...
-ACP-Event-Count: 5
+WHENCE-Trace-Id: 20260228T103215Z_7f2c
+WHENCE-Trace-Hash: sha256:...
+WHENCE-Event-Count: 5
 ```
 
 **Warning:** Adding trailers to existing commits requires `--amend`, which rewrites the commit hash.
@@ -773,7 +773,7 @@ ACP-Event-Count: 5
 For teams that want traces in the commit graph:
 
 ```bash
-git commit --allow-empty -m "acp: trace 20260228T103215Z_7f2c (5 events, claude-code)"
+git commit --allow-empty -m "whence: trace 20260228T103215Z_7f2c (5 events, claude-code)"
 ```
 
 **Warning:** This adds commits to history. Use only with explicit team agreement.
@@ -791,13 +791,13 @@ git commit --allow-empty -m "acp: trace 20260228T103215Z_7f2c (5 events, claude-
 - RFC 2119 conformance language
 
 **Bindings:**
-- ACP-GitHub (Checks API, PR annotations)
-- ACP-Bitbucket (Code Insights, build annotations)
-- ACP-GitLab (CI metadata, merge request notes)
+- WHENCE-GitHub (Checks API, PR annotations)
+- WHENCE-Bitbucket (Code Insights, build annotations)
+- WHENCE-GitLab (CI metadata, merge request notes)
 
 **Tooling:**
 - Import adapters for tool-native logs (Claude Code, Codex, Cursor)
-- CI templates for surfacing ACP data in pull request UIs
+- CI templates for surfacing WHENCE data in pull request UIs
 - Aggregate queries across traces
 - Trace export to Markdown, HTML, PDF
 - VS Code and JetBrains extensions
@@ -807,16 +807,16 @@ git commit --allow-empty -m "acp: trace 20260228T103215Z_7f2c (5 events, claude-
 ## FAQ
 
 **Why not just use better commit messages?**
-Commit messages describe *what* changed. ACP records *how* and *why* through AI interaction. They're complementary.
+Commit messages describe *what* changed. WHENCE records *how* and *why* through AI interaction. They're complementary.
 
 **Why Git notes for the reference binding?**
 Built into Git, travel with the repo, same push/fetch semantics as branches, no external infrastructure required.
 
-**Could ACP use something other than Git notes?**
+**Could WHENCE use something other than Git notes?**
 Yes. The trace format is binding-agnostic. Future revisions may define bindings for other platforms.
 
 **Why are traces shared by default?**
-Because blind code review, impossible auditing, and lost institutional knowledge all require that traces be accessible beyond the original developer.
+Because blind code review, impossible auditing, and lost institutional knowledge all require that WHENCE traces be accessible beyond the original developer.
 
 **Why hash responses instead of storing them?**
 AI responses can contain sensitive information or be very large. The default `hash-response` mode stores prompts (which the developer controls) while protecting model output.
@@ -830,17 +830,17 @@ The local queue is unaffected. Attach traces after rebasing. If already attached
 **What if a secret gets into a pushed note?**
 Overwrite the note and force-push the notes ref. Treat the secret as compromised.
 
-**Can CI require ACP traces on all AI-assisted commits?**
-Only when the AI tool self-identifies. Claude Code adds `Co-authored-by` trailers, which CI can detect and require matching traces for. Tools that don't signal co-authorship (Codex, Cursor, Copilot) produce commits indistinguishable from hand-written ones. For those, ACP relies on coverage reporting, team conventions, and optional attestation — not technical enforcement.
+**Can CI require WHENCE traces on all AI-assisted commits?**
+Only when the AI tool self-identifies. Claude Code adds `Co-authored-by` trailers, which CI can detect and require matching traces for. Tools that don't signal co-authorship (Codex, Cursor, Copilot) produce commits indistinguishable from hand-written ones. For those, WHENCE relies on coverage reporting, team conventions, and optional attestation — not technical enforcement.
 
 ---
 
 ## Contributing
 
-ACP is an open standard developed in the open. The specification, reference implementation, and related tooling live at https://github.com/zmarkan/acp.
+WHENCE is an open standard developed in the open. The specification, reference implementation, and related tooling live at https://github.com/zmarkan/whence.
 
 To propose changes, open an RFC issue. Breaking changes require a spec version bump and a migration path.
 
 ---
 
-*ACP v0.1.0 — Draft*
+*WHENCE v0.1.0 — Draft*

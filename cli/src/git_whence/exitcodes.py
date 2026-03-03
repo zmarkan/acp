@@ -1,4 +1,4 @@
-"""ACP CLI exit codes (consistent across all commands)."""
+"""WHENCE CLI exit codes (consistent across all commands)."""
 
 SUCCESS = 0
 USER_ERROR = 1

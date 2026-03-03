@@ -1,4 +1,4 @@
-name: ACP Provenance
+name: WHENCE Provenance
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  acp-provenance:
+  whence-provenance:
     name: Verify AI Code Provenance
     runs-on: ubuntu-latest
 
@@ -22,47 +22,47 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Fetch ACP notes
-        run: git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true
+      - name: Fetch WHENCE notes
+        run: git fetch origin refs/notes/whence:refs/notes/whence 2>/dev/null || true
 
       - name: Install git-whence
         run: pip install -e .
         working-directory: cli
 
-      - name: Initialize ACP
+      - name: Initialize WHENCE
         run: git whence init
 
       - name: Determine commit range
         id: range
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "ACP_RANGE=origin/${{ github.event.pull_request.base.ref }}..HEAD" >> "$GITHUB_ENV"
+            echo "WHENCE_RANGE=origin/${{ github.event.pull_request.base.ref }}..HEAD" >> "$GITHUB_ENV"
           else
-            echo "ACP_RANGE=HEAD~1..HEAD" >> "$GITHUB_ENV"
+            echo "WHENCE_RANGE=HEAD~1..HEAD" >> "$GITHUB_ENV"
           fi
 
       - name: Verify trace integrity
-        run: git whence verify $ACP_RANGE --policy integrity
+        run: git whence verify $WHENCE_RANGE --policy integrity
 
       - name: Check co-author compliance
-        run: git whence verify $ACP_RANGE --policy co-author
+        run: git whence verify $WHENCE_RANGE --policy co-author
 
       - name: Generate provenance report
         run: |
-          git whence report $ACP_RANGE --format markdown > acp-summary.md
-          git whence report $ACP_RANGE --format json > acp-report.json
+          git whence report $WHENCE_RANGE --format markdown > whence-summary.md
+          git whence report $WHENCE_RANGE --format json > whence-report.json
 
       - name: Post PR comment
         if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh pr comment ${{ github.event.pull_request.number }} --body-file acp-summary.md
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file whence-summary.md
 
       - name: Upload provenance artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: acp-provenance
+          name: whence-provenance
           path: |
-            acp-report.json
-            acp-summary.md
+            whence-report.json
+            whence-summary.md

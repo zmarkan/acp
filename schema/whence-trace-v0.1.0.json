@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/zmarkan/acp/schema/acp-trace-v0.1.0.json",
-  "title": "ACP Trace",
-  "description": "AI Code Provenance trace record (v0.1.0). Bundles one or more AI development events linked to a version control artifact.",
+  "$id": "https://github.com/zmarkan/whence/schema/whence-trace-v0.1.0.json",
+  "title": "WHENCE Trace",
+  "description": "WHENCE Trace Format record (v0.1.0). Bundles one or more AI development events linked to a version control artifact.",
   "type": "object",
   "required": [
     "spec_version",
@@ -18,7 +18,7 @@
     "spec_version": {
       "type": "string",
       "const": "0.1.0",
-      "description": "ACP spec version"
+      "description": "WHENCE spec version"
     },
     "trace_id": {
       "type": "string",
@@ -197,7 +197,7 @@
         "spec_version": {
           "type": "string",
           "const": "0.1.0",
-          "description": "ACP spec version"
+          "description": "WHENCE spec version"
         },
         "event_id": {
           "type": "string",

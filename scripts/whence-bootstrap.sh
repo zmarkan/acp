@@ -1,8 +1,8 @@
 #!/bin/bash
-# acp-bootstrap.sh — manual trace attachment before git-whence exists
-# Usage: ./acp-bootstrap.sh <commit-sha> <tool> <prompt-text>
+# whence-bootstrap.sh — manual trace attachment before git-whence exists
+# Usage: ./whence-bootstrap.sh <commit-sha> <tool> <prompt-text>
 #
-# This script is Phase 1 of ACP dogfooding: it attaches ACP traces
+# This script is Phase 1 of WHENCE dogfooding: it attaches WHENCE traces
 # to commits using raw git notes, before the git-whence CLI exists.
 #
 # Requirements: bash, jq, openssl, git, shasum
@@ -75,17 +75,17 @@ TRACE_HASH="sha256:$(echo -n "$TRACE" | shasum -a 256 | cut -d' ' -f1)"
 TRACE=$(echo "$TRACE" | jq -c --arg th "$TRACE_HASH" '.integrity.trace_hash = $th')
 
 # Build envelope
-ENVELOPE="ACP-Spec-Version: 0.1.0
-ACP-Trace-Id: $TRACE_ID
-ACP-Trace-Hash: $TRACE_HASH
-ACP-Event-Count: 1
-ACP-Tool: $TOOL
-ACP-Redaction: hash-response
+ENVELOPE="WHENCE-Spec-Version: 0.1.0
+WHENCE-Trace-Id: $TRACE_ID
+WHENCE-Trace-Hash: $TRACE_HASH
+WHENCE-Event-Count: 1
+WHENCE-Tool: $TOOL
+WHENCE-Redaction: hash-response
 
 $TRACE"
 
 # Check if note already exists
-EXISTING=$(git notes --ref=refs/notes/acp show "$SHA" 2>/dev/null || true)
+EXISTING=$(git notes --ref=refs/notes/whence show "$SHA" 2>/dev/null || true)
 if [ -n "$EXISTING" ]; then
   ENVELOPE="$EXISTING
 ---
@@ -93,6 +93,6 @@ $ENVELOPE"
 fi
 
 # Write the note
-echo "$ENVELOPE" | git notes --ref=refs/notes/acp add -f --file=- "$SHA"
+echo "$ENVELOPE" | git notes --ref=refs/notes/whence add -f --file=- "$SHA"
 
-echo "ACP trace $TRACE_ID attached to $SHA"
+echo "WHENCE trace $TRACE_ID attached to $SHA"

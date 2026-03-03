@@ -33,11 +33,11 @@ def _make_trace(**overrides):
 def test_serialize_has_headers():
     trace = _make_trace()
     env = serialize(trace)
-    assert "ACP-Spec-Version: 0.1.0" in env
-    assert "ACP-Trace-Id: 20260228T103215Z_7f2c" in env
-    assert "ACP-Event-Count: 1" in env
-    assert "ACP-Tool: claude-code" in env
-    assert "ACP-Redaction: hash-response" in env
+    assert "WHENCE-Spec-Version: 0.1.0" in env
+    assert "WHENCE-Trace-Id: 20260228T103215Z_7f2c" in env
+    assert "WHENCE-Event-Count: 1" in env
+    assert "WHENCE-Tool: claude-code" in env
+    assert "WHENCE-Redaction: hash-response" in env
 
 
 def test_serialize_has_json_body():
@@ -87,8 +87,8 @@ def test_parse_bare_json_array():
 def test_parse_headers():
     env = serialize(_make_trace())
     headers = parse_headers(env)
-    assert headers["acp-spec-version"] == "0.1.0"
-    assert headers["acp-tool"] == "claude-code"
+    assert headers["whence-spec-version"] == "0.1.0"
+    assert headers["whence-tool"] == "claude-code"
 
 
 def test_parse_empty():

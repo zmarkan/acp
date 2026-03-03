@@ -5,7 +5,7 @@ import sys
 
 from . import __version__
 from .exitcodes import ENV_ERROR, USER_ERROR
-from .git import ACPNotInitialized, NotAGitRepo
+from .git import WHENCENotInitialized, NotAGitRepo
 from .commands import (
     init,
     record,
@@ -24,7 +24,7 @@ from .commands import (
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="git-whence",
-        description="ACP (AI Code Provenance) reference implementation",
+        description="WHENCE reference implementation",
     )
     parser.add_argument(
         "--version", action="version", version=f"git-whence {__version__}"
@@ -51,8 +51,8 @@ def main(argv: list[str] | None = None) -> int:
     except NotAGitRepo:
         print("Error: not a Git repository", file=sys.stderr)
         return ENV_ERROR
-    except ACPNotInitialized:
-        print("Error: ACP not initialized (run 'git whence init')", file=sys.stderr)
+    except WHENCENotInitialized:
+        print("Error: WHENCE not initialized (run 'git whence init')", file=sys.stderr)
         return ENV_ERROR
     except KeyboardInterrupt:
         return 130

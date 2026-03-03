@@ -32,7 +32,7 @@ def register(subparsers):
 
 
 def run(args) -> int:
-    git.ensure_acp_initialized()
+    git.ensure_whence_initialized()
 
     # Gather commits
     if args.commits:
@@ -164,7 +164,7 @@ def _output_text(data: dict) -> None:
     traced = len(data["traced_commits"])
     pct = data["coverage"] * 100
 
-    print("ACP Provenance Report")
+    print("WHENCE Provenance Report")
     print(f"  AI-assisted commits: {traced} of {total} ({pct:.0f}%)")
 
     tools_str = ", ".join(
@@ -213,7 +213,7 @@ def _output_markdown(data: dict) -> None:
     )
     integrity = "All traces valid" if data["integrity_valid"] else "Issues found"
 
-    print("## ACP Provenance Summary")
+    print("## WHENCE Provenance Summary")
     print()
     print(f"**AI-assisted commits:** {traced} of {total} ({pct:.0f}%)")
     if tools_str:
@@ -233,7 +233,7 @@ def _output_markdown(data: dict) -> None:
     if violations:
         print(f"**Co-authored commits without traces:** {len(violations)}")
         for v in violations:
-            print(f"- {v['sha']} `Co-authored-by: {v['co_author']}` -- missing ACP trace")
+            print(f"- {v['sha']} `Co-authored-by: {v['co_author']}` -- missing WHENCE trace")
 
 
 def _find_ai_co_author(message: str) -> str | None:

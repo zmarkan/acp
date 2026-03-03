@@ -1,6 +1,6 @@
 # git-whence CLI Reference
 
-### The reference implementation of ACP (AI Code Provenance)
+### The reference implementation of WHENCE
 
 ---
 
@@ -11,8 +11,8 @@
 pip install git-whence
 
 # From source
-git clone https://github.com/zmarkan/acp.git
-cd acp/cli
+git clone https://github.com/zmarkan/whence.git
+cd whence/cli
 pip install -e .
 ```
 
@@ -23,7 +23,7 @@ Once installed, Git auto-discovers the `git-whence` binary and `git whence <comm
 ## Quick start
 
 ```bash
-# Set up ACP in a repository
+# Set up WHENCE in a repository
 git whence init
 
 # Record a prompt event (manual capture)
@@ -35,7 +35,7 @@ git whence record --tool claude-code --prompt "Refactor auth middleware to use d
 git whence attach
 
 # Push traces to the remote
-git push origin refs/notes/acp
+git push origin refs/notes/whence
 
 # View traces
 git whence log
@@ -47,7 +47,7 @@ git whence log
 
 ### `git whence init`
 
-Initialize ACP in the current Git repository.
+Initialize WHENCE in the current Git repository.
 
 ```bash
 git whence init [--redaction <mode>] [--tool <identifier>]
@@ -55,18 +55,18 @@ git whence init [--redaction <mode>] [--tool <identifier>]
 
 **What it does:**
 
-1. Creates `.git/acp/` directory
-2. Creates `.git/acp/config.json` with defaults (or provided options)
-3. Creates empty `.git/acp/queue.ndjson`
-4. Adds `refs/notes/acp` to the fetch refspec in `.git/config`:
+1. Creates `.git/whence/` directory
+2. Creates `.git/whence/config.json` with defaults (or provided options)
+3. Creates empty `.git/whence/queue.ndjson`
+4. Adds `refs/notes/whence` to the fetch refspec in `.git/config`:
    ```ini
    [remote "origin"]
-       fetch = +refs/notes/acp:refs/notes/acp
+       fetch = +refs/notes/whence:refs/notes/whence
    ```
 5. Configures `notes.rewriteRef` for automatic note rewriting during rebase:
    ```ini
    [notes]
-       rewriteRef = refs/notes/acp
+       rewriteRef = refs/notes/whence
        rewriteMode = concatenate
    ```
 
@@ -83,7 +83,7 @@ git whence init [--redaction <mode>] [--tool <identifier>]
 |------|---------|
 | 0 | Initialized successfully |
 | 1 | Not a Git repository |
-| 2 | ACP already initialized (no-op, prints current config) |
+| 2 | WHENCE already initialized (no-op, prints current config) |
 
 ---
 
@@ -95,7 +95,7 @@ Record a prompt event to the local queue.
 git whence record --prompt <text> [options]
 ```
 
-This is the primary way events enter the queue during manual workflows. For tools with native ACP integration, the tool writes directly to `queue.ndjson` in the same format — `record` provides the same capability via the command line.
+This is the primary way events enter the queue during manual workflows. For tools with native WHENCE integration, the tool writes directly to `queue.ndjson` in the same format — `record` provides the same capability via the command line.
 
 **Options:**
 
@@ -119,7 +119,7 @@ This is the primary way events enter the queue during manual workflows. For tool
 1. Generates `event_id` (prefixed `evt_`) and `timestamp`
 2. If `--context` is set: captures `git_base_sha` from HEAD, `workspace_state` from `git status`, and hashes any `--input-artifacts` as raw bytes
 3. Serializes the event as a single JSON line
-4. Appends to `.git/acp/queue.ndjson`
+4. Appends to `.git/whence/queue.ndjson`
 
 **Exit codes:**
 
@@ -127,7 +127,7 @@ This is the primary way events enter the queue during manual workflows. For tool
 |------|---------|
 | 0 | Event recorded |
 | 1 | Missing required `--prompt` flag |
-| 2 | ACP not initialized (run `git whence init`) |
+| 2 | WHENCE not initialized (run `git whence init`) |
 
 **Examples:**
 
@@ -215,19 +215,19 @@ Deletes all events. Requires `--force` if queue has more than 0 events (safety c
 |------|---------|
 | 0 | Success |
 | 1 | Queue is empty (for `list`, `export`) |
-| 2 | ACP not initialized |
+| 2 | WHENCE not initialized |
 
 ---
 
 ### `git whence attach`
 
-Bundle queued events into a trace and attach to a commit via ACP-Git notes.
+Bundle queued events into a trace and attach to a commit via the WHENCE Git Binding notes.
 
 ```bash
 git whence attach [<commit>] [options]
 ```
 
-This is the core command. It reads events from the queue, runs the redaction pipeline, computes hashes, assembles a trace, writes it as an ACP-Git envelope to `refs/notes/acp`, and marks the consumed events.
+This is the core command. It reads events from the queue, runs the redaction pipeline, computes hashes, assembles a trace, writes it as a WHENCE Git Binding envelope to `refs/notes/whence`, and marks the consumed events.
 
 **Arguments:**
 
@@ -249,7 +249,7 @@ This is the core command. It reads events from the queue, runs the redaction pip
 
 **Behaviour:**
 
-1. Read unconsumed events from `.git/acp/queue.ndjson`
+1. Read unconsumed events from `.git/whence/queue.ndjson`
 2. Apply event filters (`--since`, `--interactive`) if specified
 3. For each event with storable content:
    a. Run the secret scanner against prompt text (and response if captured)
@@ -263,7 +263,7 @@ This is the core command. It reads events from the queue, runs the redaction pip
 9. Compute `trace_hash` via canonical JSON serialization (RFC 8785, excluding `integrity` object)
 10. Build the envelope (headers + compact single-line JSON body)
 11. If a note already exists on the target commit: read existing note, append `\n---\n`, append new envelope
-12. Write the note: `git notes --ref=refs/notes/acp add -f --file=- <commit>`
+12. Write the note: `git notes --ref=refs/notes/whence add -f --file=- <commit>`
 13. Mark consumed events in the queue (or clear queue if no filters were used)
 14. Print summary
 
@@ -284,7 +284,7 @@ This is the core command. It reads events from the queue, runs the redaction pip
 |------|---------|
 | 0 | Trace attached successfully |
 | 1 | No unconsumed events in queue (nothing to attach) |
-| 2 | ACP not initialized |
+| 2 | WHENCE not initialized |
 | 3 | High-confidence secret detected and `--force` not set |
 | 4 | Target commit not found |
 
@@ -317,7 +317,7 @@ git whence attach --redaction full
 
 ### `git whence show`
 
-Display the ACP trace(s) attached to a commit.
+Display the WHENCE trace(s) attached to a commit.
 
 ```bash
 git whence show [<commit>] [options]
@@ -401,15 +401,15 @@ Outputs the raw envelope content as stored in the Git note, including headers.
 | Code | Meaning |
 |------|---------|
 | 0 | Trace(s) found and displayed |
-| 1 | No ACP trace on this commit |
-| 2 | ACP not initialized or notes ref not found |
+| 1 | No WHENCE trace on this commit |
+| 2 | WHENCE not initialized or notes ref not found |
 | 3 | Integrity verification failed (with `--verify`) |
 
 ---
 
 ### `git whence log`
 
-Show ACP trace summaries across a range of commits.
+Show WHENCE trace summaries across a range of commits.
 
 ```bash
 git whence log [<revision-range>] [options]
@@ -433,16 +433,16 @@ git whence log [<revision-range>] [options]
 
 ```
 a1b2c3d feat: refactor auth middleware
-  ACP: 3 events via claude-code (hash-response)
+  WHENCE: 3 events via claude-code (hash-response)
 
 d4e5f6a fix: optimize user lookup query
-  ACP: 2 events via claude-code (hash-response)
+  WHENCE: 2 events via claude-code (hash-response)
 
 7g8h9i0 chore: update CI config
-  (no ACP trace)
+  (no WHENCE trace)
 
 b2c3d4e feat: add API client
-  ACP: 1 event via codex (hash-response)
+  WHENCE: 1 event via codex (hash-response)
 ```
 
 Without `--all`, commits without traces are omitted.
@@ -466,13 +466,13 @@ Co-authored commits without traces: 0
 |------|---------|
 | 0 | Success (even if no traces found) |
 | 1 | Invalid revision range |
-| 2 | ACP not initialized or notes ref not found |
+| 2 | WHENCE not initialized or notes ref not found |
 
 ---
 
 ### `git whence verify`
 
-Validate ACP traces on commits against integrity rules and CI policies.
+Validate WHENCE traces on commits against integrity rules and CI policies.
 
 ```bash
 git whence verify [<revision-range>] --policy <policy> [options]
@@ -499,10 +499,10 @@ git whence verify [<revision-range>] --policy <policy> [options]
 **`integrity`** — Validate all traces present on commits in the range:
 
 1. Envelope has all required headers
-2. `ACP-Trace-Id`, `ACP-Event-Count`, `ACP-Redaction` headers match JSON body
+2. `WHENCE-Trace-Id`, `WHENCE-Event-Count`, `WHENCE-Redaction` headers match JSON body
 3. JSON body parses and contains all required fields
 4. `event_count` matches length of `events` array
-5. `ACP-Trace-Hash` matches recomputed canonical JSON hash
+5. `WHENCE-Trace-Hash` matches recomputed canonical JSON hash
 6. Each event's `prompt_hash` matches SHA-256 of stored, normalized prompt (when present)
 7. Events with `redacted: true` contain at least one `[REDACTED:...]` token
 8. Events with `response_captured: false` do not have `response_hash` or `response`
@@ -510,12 +510,12 @@ git whence verify [<revision-range>] --policy <policy> [options]
 
 Exits 0 if all traces valid (or no traces present). Exits 3 if any trace is invalid.
 
-**`co-author`** — Check that commits with AI co-author signals have ACP traces:
+**`co-author`** — Check that commits with AI co-author signals have WHENCE traces:
 
 1. Scan commit messages and trailers for co-author patterns:
    - `Co-authored-by:` trailers containing known AI tool identifiers
    - Known patterns: `Claude`, `GitHub Copilot`, `Cursor Tab`
-2. For each commit with a co-author signal: verify an ACP trace exists
+2. For each commit with a co-author signal: verify a WHENCE trace exists
 3. Report violations
 
 Exits 0 if all co-authored commits have traces. Exits 3 if any co-authored commit lacks a trace.
@@ -530,13 +530,13 @@ Exits 0 if coverage meets threshold. Exits 3 if below.
 **`path-based`** — Require traces on commits touching specific paths:
 
 1. For each commit in range: check if changed files match any `--paths` glob
-2. For matching commits: verify an ACP trace exists
+2. For matching commits: verify a WHENCE trace exists
 
 Exits 0 if all matching commits have traces. Exits 3 if any lack traces.
 
-**`attestation`** — Require either an ACP trace or a `No-AI-Used` trailer:
+**`attestation`** — Require either a WHENCE trace or a `No-AI-Used` trailer:
 
-1. For each commit in range: check for ACP trace OR `No-AI-Used` trailer in commit message
+1. For each commit in range: check for WHENCE trace OR `No-AI-Used` trailer in commit message
 2. Report commits that have neither
 
 Exits 0 if all commits are accounted for. Exits 3 if any commit has neither trace nor attestation.
@@ -568,7 +568,7 @@ Range: origin/main..HEAD (6 commits)
   e5f6a7b Co-authored-by: Claude → NO TRACE ✗
   f6a7b8c no co-author signal — skipped
 
-Result: FAIL (1 co-authored commit without ACP trace)
+Result: FAIL (1 co-authored commit without WHENCE trace)
 ```
 
 **Exit codes:**
@@ -577,7 +577,7 @@ Result: FAIL (1 co-authored commit without ACP trace)
 |------|---------|
 | 0 | Policy passed |
 | 1 | Invalid arguments or revision range |
-| 2 | ACP not initialized or notes ref not found |
+| 2 | WHENCE not initialized or notes ref not found |
 | 3 | Policy failed (violations found) |
 
 ---
@@ -602,7 +602,7 @@ Designed for CI integration. Produces structured output suitable for PR comments
 **Output (`--format markdown`):**
 
 ```markdown
-## ACP Provenance Summary
+## WHENCE Provenance Summary
 
 **AI-assisted commits:** 4 of 6 (67%)
 **Tools used:** claude-code (3 commits), codex (1 commit)
@@ -617,7 +617,7 @@ Designed for CI integration. Produces structured output suitable for PR comments
 | b2c3d4e | claude-code | 2 | "Update error handling to match new middleware" |
 
 **Co-authored commits without traces:** 1 ⚠️
-- e5f6a7b `Co-authored-by: Claude` — missing ACP trace
+- e5f6a7b `Co-authored-by: Claude` — missing WHENCE trace
 ```
 
 **Output (`--format json`):**
@@ -657,13 +657,13 @@ Designed for CI integration. Produces structured output suitable for PR comments
 |------|---------|
 | 0 | Report generated |
 | 1 | Invalid arguments or revision range |
-| 2 | ACP not initialized or notes ref not found |
+| 2 | WHENCE not initialized or notes ref not found |
 
 ---
 
 ### `git whence reattach`
 
-Migrate orphaned ACP traces after history rewriting (rebase, squash, amend).
+Migrate orphaned WHENCE traces after history rewriting (rebase, squash, amend).
 
 ```bash
 git whence reattach [options]
@@ -671,7 +671,7 @@ git whence reattach [options]
 
 **Behaviour:**
 
-1. Find all notes in `refs/notes/acp` whose target SHAs are not reachable from any branch
+1. Find all notes in `refs/notes/whence` whose target SHAs are not reachable from any branch
 2. For each orphaned note: search the reflog for a rebase/squash mapping to a successor commit
 3. Present proposed mappings for user confirmation
 4. For confirmed mappings: write new envelope records on successor commits
@@ -688,7 +688,7 @@ git whence reattach [options]
 **Output:**
 
 ```
-Found 3 orphaned ACP traces:
+Found 3 orphaned WHENCE traces:
 
   old-sha-1 → new-sha-a (reflog: rebase)
     Trace: 20260228T103215Z_7f2c (3 events, claude-code)
@@ -716,31 +716,31 @@ Skipped: 0
 |------|---------|
 | 0 | Migration complete (or nothing to migrate) |
 | 1 | No reflog available (pruned or shallow clone) |
-| 2 | ACP not initialized or notes ref not found |
+| 2 | WHENCE not initialized or notes ref not found |
 
 ---
 
 ### `git whence push`
 
-Convenience wrapper for pushing ACP notes to a remote.
+Convenience wrapper for pushing WHENCE notes to a remote.
 
 ```bash
 git whence push [<remote>]
 ```
 
-Equivalent to `git push <remote> refs/notes/acp`. Default remote is `origin`.
+Equivalent to `git push <remote> refs/notes/whence`. Default remote is `origin`.
 
 ---
 
 ### `git whence fetch`
 
-Convenience wrapper for fetching ACP notes from a remote.
+Convenience wrapper for fetching WHENCE notes from a remote.
 
 ```bash
 git whence fetch [<remote>]
 ```
 
-Equivalent to `git fetch <remote> refs/notes/acp:refs/notes/acp`. Default remote is `origin`.
+Equivalent to `git fetch <remote> refs/notes/whence:refs/notes/whence`. Default remote is `origin`.
 
 If the fetch refspec is already configured (via `init`), this is a no-op — `git fetch` already pulls notes. This command exists for repos where `init` wasn't run or the refspec was removed.
 
@@ -748,14 +748,14 @@ If the fetch refspec is already configured (via `init`), this is a no-op — `gi
 
 ## Queue file format
 
-`.git/acp/queue.ndjson` — one JSON object per line. Events are appended during `record` and consumed during `attach`.
+`.git/whence/queue.ndjson` — one JSON object per line. Events are appended during `record` and consumed during `attach`.
 
 ```jsonl
 {"event_id":"evt_a1b2c3d4","timestamp":"2026-02-28T10:21:33.123Z","tool":"claude-code","prompt":"Refactor auth middleware to use DI","prompt_hash":"sha256:9f86d08...","response_captured":false,"files":["src/middleware/auth.ts"],"context":{"git_base_sha":"abc123...","workspace_state":"dirty"}}
 {"event_id":"evt_e5f6a7b8","timestamp":"2026-02-28T10:45:12.456Z","tool":"claude-code","prompt":"Add tests for DI auth middleware","prompt_hash":"sha256:b4d2f3c...","response_captured":false,"files":["src/middleware/auth.test.ts"]}
 ```
 
-Each line is a complete event object as defined in the ACP spec (Part 1: Events). The `prompt_hash` is computed at record time on the raw prompt text (pre-redaction). Redaction is applied at `attach` time and the hash is recomputed on the redacted text.
+Each line is a complete event object as defined in the WHENCE spec (Part 1: WHENCE Trace Format). The `prompt_hash` is computed at record time on the raw prompt text (pre-redaction). Redaction is applied at `attach` time and the hash is recomputed on the redacted text.
 
 Events are consumed by `attach` in order. When `attach` runs without filters, the entire file is cleared after successful attachment. When filters are used (`--since`, `--interactive`), consumed events are removed and remaining events are rewritten to the file.
 
@@ -763,12 +763,12 @@ Events are consumed by `attach` in order. When `attach` runs without filters, th
 
 ## Config file format
 
-`.git/acp/config.json`:
+`.git/whence/config.json`:
 
 ```json
 {
   "spec_version": "0.1.0",
-  "notes_ref": "refs/notes/acp",
+  "notes_ref": "refs/notes/whence",
   "default_redaction": "hash-response",
   "default_tool": null,
   "max_queue_events": 5000,
@@ -778,18 +778,18 @@ Events are consumed by `attach` in order. When `attach` runs without filters, th
 
 | Field | Description |
 |-------|-------------|
-| `spec_version` | ACP spec version this config was created with |
-| `notes_ref` | Git ref for ACP notes (should not need changing) |
+| `spec_version` | WHENCE spec version this config was created with |
+| `notes_ref` | Git ref for WHENCE notes (should not need changing) |
 | `default_redaction` | Default redaction mode for `attach` |
 | `default_tool` | Default tool identifier for `record` |
 | `max_queue_events` | Warn when queue exceeds this count |
-| `redact_patterns_file` | Path to custom redaction patterns file (relative to `.git/acp/`) |
+| `redact_patterns_file` | Path to custom redaction patterns file (relative to `.git/whence/`) |
 
 ---
 
 ## Custom redaction patterns
 
-`.git/acp/redact_patterns.txt` — one regex pattern per line. Lines starting with `#` are comments.
+`.git/whence/redact_patterns.txt` — one regex pattern per line. Lines starting with `#` are comments.
 
 ```
 # Company-specific API keys
@@ -808,18 +808,18 @@ Custom patterns produce `[REDACTED:custom]` tokens. They run in addition to the 
 
 ## Native tool integration
 
-Tools with native ACP support can write directly to `queue.ndjson` instead of requiring `git whence record`. The integration contract is:
+Tools with native WHENCE support can write directly to `queue.ndjson` instead of requiring `git whence record`. The integration contract is:
 
-1. Check that `.git/acp/queue.ndjson` exists (ACP is initialized)
-2. Append one JSON line per prompt event, conforming to the event schema in ACP spec Part 1
+1. Check that `.git/whence/queue.ndjson` exists (WHENCE is initialized)
+2. Append one JSON line per prompt event, conforming to the event schema in WHENCE spec Part 1
 3. Compute `prompt_hash` at record time on raw prompt text
 4. If response is captured: include `response_captured: true` and the response text or hash
 5. If response is not captured: set `response_captured: false`
 6. Do not perform redaction (that happens at `attach` time)
 
-Tools should not write to `refs/notes/acp` directly. The `attach` command is the single gate for redaction and trace assembly.
+Tools should not write to `refs/notes/whence` directly. The `attach` command is the single gate for redaction and trace assembly.
 
-**Environment variable:** Tools can check for `ACP_QUEUE_PATH` as an override for the queue file location. Default is `.git/acp/queue.ndjson` relative to the repository root.
+**Environment variable:** Tools can check for `WHENCE_QUEUE_PATH` as an override for the queue file location. Default is `.git/whence/queue.ndjson` relative to the repository root.
 
 ---
 
@@ -830,7 +830,7 @@ Tools should not write to `refs/notes/acp` directly. The `attach` command is the
 version: 2.1
 
 jobs:
-  acp-provenance:
+  whence-provenance:
     docker:
       - image: cimg/python:3.12
     steps:
@@ -840,8 +840,8 @@ jobs:
           command: pip install -e .
           working_directory: cli
       - run:
-          name: Fetch ACP notes
-          command: git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true
+          name: Fetch WHENCE notes
+          command: git fetch origin refs/notes/whence:refs/notes/whence 2>/dev/null || true
       - run:
           name: Verify trace integrity
           command: git whence verify origin/main..HEAD --policy integrity
@@ -851,27 +851,27 @@ jobs:
       - run:
           name: Generate provenance report
           command: |
-            git whence report origin/main..HEAD --format markdown > acp-summary.md
-            git whence report origin/main..HEAD --format json > acp-report.json
+            git whence report origin/main..HEAD --format markdown > whence-summary.md
+            git whence report origin/main..HEAD --format json > whence-report.json
       - run:
           name: Post PR comment
           command: |
             if [ -n "$CIRCLE_PULL_REQUEST" ]; then
-              gh pr comment --body-file acp-summary.md
+              gh pr comment --body-file whence-summary.md
             fi
       - store_artifacts:
-          path: acp-report.json
-          destination: acp-report.json
+          path: whence-report.json
+          destination: whence-report.json
       - store_artifacts:
-          path: acp-summary.md
-          destination: acp-summary.md
+          path: whence-summary.md
+          destination: whence-summary.md
 
 workflows:
   build-and-verify:
     jobs:
       - build
       - test
-      - acp-provenance:
+      - whence-provenance:
           requires:
             - build
 ```
@@ -886,6 +886,6 @@ All commands follow a consistent exit code scheme:
 |------|---------|
 | 0 | Success |
 | 1 | User error (bad arguments, empty queue, invalid range) |
-| 2 | Environment error (not a Git repo, ACP not initialized, notes ref missing) |
+| 2 | Environment error (not a Git repo, WHENCE not initialized, notes ref missing) |
 | 3 | Verification or policy failure |
 | 4 | Target not found (commit doesn't exist) |

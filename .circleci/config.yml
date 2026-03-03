@@ -24,57 +24,57 @@ jobs:
           path: cli/test-results
           destination: test-results
 
-  acp-provenance:
+  whence-provenance:
     docker:
       - image: cimg/python:3.12
     steps:
       - checkout
       - run:
-          name: Fetch full history and ACP notes
+          name: Fetch full history and WHENCE notes
           command: |
             git fetch --unshallow || true
-            git fetch origin refs/notes/acp:refs/notes/acp 2>/dev/null || true
+            git fetch origin refs/notes/whence:refs/notes/whence 2>/dev/null || true
       - run:
           name: Install git-whence
           command: pip install -e .
           working_directory: cli
       - run:
-          name: Initialize ACP
+          name: Initialize WHENCE
           command: git whence init
       - run:
           name: Determine commit range
           command: |
             if [ -n "$CIRCLE_PULL_REQUEST" ]; then
-              echo "export ACP_RANGE='origin/main..HEAD'" >> "$BASH_ENV"
+              echo "export WHENCE_RANGE='origin/main..HEAD'" >> "$BASH_ENV"
             else
-              echo "export ACP_RANGE='HEAD~1..HEAD'" >> "$BASH_ENV"
+              echo "export WHENCE_RANGE='HEAD~1..HEAD'" >> "$BASH_ENV"
             fi
       - run:
           name: Verify trace integrity
-          command: git whence verify $ACP_RANGE --policy integrity
+          command: git whence verify $WHENCE_RANGE --policy integrity
       - run:
           name: Check co-author compliance
-          command: git whence verify $ACP_RANGE --policy co-author
+          command: git whence verify $WHENCE_RANGE --policy co-author
       - run:
           name: Generate provenance report
           command: |
-            git whence report $ACP_RANGE --format markdown > acp-summary.md
-            git whence report $ACP_RANGE --format json > acp-report.json
+            git whence report $WHENCE_RANGE --format markdown > whence-summary.md
+            git whence report $WHENCE_RANGE --format json > whence-report.json
       - run:
           name: Post PR comment
           command: |
             if [ -n "$CIRCLE_PULL_REQUEST" ]; then
-              gh pr comment --body-file acp-summary.md
+              gh pr comment --body-file whence-summary.md
             fi
       - store_artifacts:
-          path: acp-report.json
-          destination: acp-report.json
+          path: whence-report.json
+          destination: whence-report.json
       - store_artifacts:
-          path: acp-summary.md
-          destination: acp-summary.md
+          path: whence-summary.md
+          destination: whence-summary.md
 
 workflows:
   build-and-verify:
     jobs:
       - test-cli
-      - acp-provenance
+      - whence-provenance
